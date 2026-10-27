@@ -106,11 +106,16 @@ export function CampoValor({
 export function Interruptor({
   name,
   defaultChecked,
+  checked,
+  onCheckedChange,
   titulo,
   descricao,
 }: {
   name: string;
   defaultChecked?: boolean;
+  /** Modo controlado (quando outro campo da tela decide o valor). */
+  checked?: boolean;
+  onCheckedChange?: (marcado: boolean) => void;
   titulo: React.ReactNode;
   descricao?: React.ReactNode;
 }) {
@@ -121,7 +126,12 @@ export function Interruptor({
         {descricao && <span className="mt-0.5 block text-[13px] text-muted-foreground">{descricao}</span>}
       </span>
       <span className="relative mt-0.5 inline-flex shrink-0">
-        <input type="checkbox" name={name} defaultChecked={defaultChecked} className="peer sr-only" />
+        <input
+          type="checkbox"
+          name={name}
+          {...(checked === undefined ? { defaultChecked } : { checked, onChange: (e) => onCheckedChange?.(e.target.checked) })}
+          className="peer sr-only"
+        />
         <span className="h-5 w-9 rounded-full bg-input transition-colors peer-checked:bg-primary peer-focus-visible:ring-3 peer-focus-visible:ring-foreground/20" />
         <span className="absolute top-0.5 left-0.5 size-4 rounded-full bg-card shadow-sm transition-transform peer-checked:translate-x-4" />
       </span>

@@ -15,20 +15,9 @@ export function formatarData(iso: string): string {
   return data.format(new Date(`${iso}T00:00:00Z`));
 }
 
-const diaDaSemana = new Intl.DateTimeFormat("pt-BR", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" });
-
 /** Diferença em dias entre duas datas "AAAA-MM-DD" (positivo = `ate` no futuro). */
 export function diasEntre(de: string, ate: string): number {
   return Math.round((Date.parse(`${ate}T00:00:00Z`) - Date.parse(`${de}T00:00:00Z`)) / 86_400_000);
-}
-
-/** "Hoje", "Amanhã", "Ontem" ou "qui., 12 de nov." */
-export function rotuloDoDia(iso: string, hoje: string): string {
-  const d = diasEntre(hoje, iso);
-  if (d === 0) return "Hoje";
-  if (d === 1) return "Amanhã";
-  if (d === -1) return "Ontem";
-  return diaDaSemana.format(new Date(`${iso}T00:00:00Z`)).replace(/\.,/, ",");
 }
 
 /** "Atrasada há 3 dias", "Vence hoje", "Vence em 5 dias"... */

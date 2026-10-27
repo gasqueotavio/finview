@@ -69,7 +69,13 @@ export function Linha({ c, categoria, hoje }: { c: ResumoCompromisso; categoria?
                 {c.parcelasPagas}/{c.totalParcelas}
               </span>
               {c.saldoDevedor !== null && c.saldoDevedor > 0 && (
-                <span className="text-muted-foreground">
+                <span
+                  className="text-muted-foreground"
+                  title={[
+                    c.saldoInformado ? "Saldo informado, com as parcelas pagas já descontadas" : "Calculado pelas parcelas que faltam",
+                    c.taxaJuros ? `juros de ${c.taxaJuros.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}% ao mês` : "sem juros",
+                  ].join(" · ")}
+                >
                   faltam <Valor valor={c.saldoDevedor} />
                 </span>
               )}

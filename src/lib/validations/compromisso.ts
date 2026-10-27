@@ -9,6 +9,24 @@ export const paraNumero = (s: string) => {
   return Number(s);
 };
 
+// Como valorEmReais, mas aceita zero (saldo devedor já quitado).
+export const saldoEmReais = z
+  .string()
+  .trim()
+  .min(1, "Informe o saldo")
+  .transform(paraNumero)
+  .pipe(z.number({ error: "Valor inválido" }).min(0, "O saldo não pode ser negativo").max(999_999_999_999))
+  .transform((n) => Math.round(n * 100) / 100);
+
+export const TAXA_OBRIGATORIA = "Informe a taxa de juros ao mês (está no contrato ou no app do banco). Sem juros? Digite 0.";
+
+// Taxa de juros ao mês, em %: aceita "1,49", "1.49" ou "1,49%".
+export const taxaMensal = z
+  .string()
+  .trim()
+  .transform((s) => Number(s.replace("%", "").replace(",", ".")))
+  .pipe(z.number({ error: "Taxa inválida" }).min(0, "A taxa não pode ser negativa").max(20, "Confira a taxa: use o valor ao mês (ex.: 1,49)"));
+
 export const valorEmReais = z
   .string()
   .trim()
@@ -31,11 +49,20 @@ export const compromissoSchema = z
     parcelasPorAno: z.preprocess(opcional, z.coerce.number().int().min(1).max(12).default(1)),
     dataVencimentoInicial: z.iso.date("Informe a data do vencimento"),
     observacao: z.preprocess(opcional, z.string().trim().max(500).optional()),
+    // Saldo que o banco informa hoje (financiamento, consórcio...). Opcional.
+    saldoDevedor: z.preprocess(opcional, saldoEmReais.optional()),
+    taxaJuros: z.preprocess(opcional, taxaMensal.optional()),
   })
   .superRefine((d, ctx) => {
+    if (TIPOS_COMPROMISSO[d.tipo].exigeTaxa && d.taxaJuros === undefined) {
+      ctx.addIssue({ code: "custom", path: ["taxaJuros"], message: TAXA_OBRIGATORIA });
+    }
     if (!TIPOS_COMPROMISSO[d.tipo].temPrazo) return;
     if (!d.totalParcelas) {
-      ctx.addIssue({ code: "custom", path: ["totalParcelas"], message: "Informe o total de parcelas" });
+      // Sem o total, dá para estimar pelo saldo; sem nenhum dos dois, não.
+      if (d.saldoDevedor === undefined) {
+        ctx.addIssue({ code: "custom", path: ["totalParcelas"], message: "Informe o total de parcelas ou o saldo devedor" });
+      }
     } else if (d.primeiraParcela > d.totalParcelas) {
       ctx.addIssue({ code: "custom", path: ["primeiraParcela"], message: "Não pode ser maior que o total de parcelas" });
     }
@@ -79,4 +106,9 @@ export const edicaoCompromissoSchema = z.object({
   valor: z.preprocess(opcional, valorEmReais.optional()),
   valorVariavel: z.preprocess((v) => v === "on", z.boolean()),
   observacao: z.preprocess(opcional, z.string().trim().max(500).optional()),
+  saldoDevedor: z.preprocess(opcional, saldoEmReais.optional()),
+  // Valor mostrado no formulário ao abrir: só grava se a pessoa mudou.
+  saldoOriginal: z.preprocess(opcional, saldoEmReais.optional()),
+  taxaJuros: z.preprocess(opcional, taxaMensal.optional()),
+  taxaOriginal: z.preprocess(opcional, taxaMensal.optional()),
 });

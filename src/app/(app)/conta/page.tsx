@@ -6,7 +6,10 @@ import { sair } from "@/app/(auth)/actions";
 import { GrupoFormulario } from "@/components/app/campos";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getUsuario } from "@/lib/auth";
+import { obterLembretes } from "@/lib/dados/lembretes";
+import { Agenda } from "./agenda";
 import { ExcluirConta } from "./excluir-conta";
+import { Notificacoes } from "./notificacoes";
 
 export const metadata = { title: "Minha conta · FinView" };
 
@@ -35,6 +38,17 @@ export default function ContaPage() {
             </form>
           </div>
         </GrupoFormulario>
+
+        <Suspense
+          fallback={
+            <div className="flex flex-col gap-4 border-t py-6" aria-busy aria-label="Carregando">
+              <Skeleton className="h-20 rounded-lg" />
+              <Skeleton className="h-16 rounded-lg" />
+            </div>
+          }
+        >
+          <Lembretes />
+        </Suspense>
 
         <GrupoFormulario
           titulo="Seus dados"
@@ -79,5 +93,26 @@ async function Email() {
       <span className="text-muted-foreground">Conectado como </span>
       <span className="font-medium">{usuario.email}</span>
     </p>
+  );
+}
+
+async function Lembretes() {
+  await connection();
+  const { preferencias, aparelhos, agendaCriadaEm } = await obterLembretes();
+  return (
+    <>
+      <GrupoFormulario
+        titulo="Notificações"
+        descricao="Lembretes de vencimento no celular ou no computador, todo dia de manhã."
+      >
+        <Notificacoes preferencias={preferencias} aparelhos={aparelhos} />
+      </GrupoFormulario>
+      <GrupoFormulario
+        titulo="Google Agenda"
+        descricao="Um link secreto com seus vencimentos, para assinar no Google Agenda, Apple Calendar ou Outlook."
+      >
+        <Agenda criadaEm={agendaCriadaEm} />
+      </GrupoFormulario>
+    </>
   );
 }

@@ -24,6 +24,13 @@ export async function exportarMeusDados() {
   const usuario = await getUsuario();
   const supabase = await createClient();
 
+  const [{ data: preferencias, error: erroPreferencias }, { data: aparelhos, error: erroAparelhos }] = await Promise.all([
+    supabase.from("notificacao_preferencias").select("no_dia, um_dia_antes, tres_dias_antes, atrasadas, mostrar_detalhes").maybeSingle(),
+    supabase.from("push_inscricoes").select("dispositivo, criado_em").order("criado_em"),
+  ]);
+  if (erroPreferencias) throw erroPreferencias;
+  if (erroAparelhos) throw erroAparelhos;
+
   const [categorias, compromissos, lancamentos] = await Promise.all([
     todas((de, ate) =>
       supabase.from("categorias").select("id, chave, nome_enc, cor, arquivada, criado_em").order("criado_em").range(de, ate),
@@ -32,7 +39,7 @@ export async function exportarMeusDados() {
       supabase
         .from("compromissos")
         .select(
-          "id, categoria_id, tipo, frequencia, descricao_enc, observacao_enc, modelo_enc, valor_parcela, valor_anual, parcelas_por_ano, valor_variavel, total_parcelas, primeira_parcela, data_vencimento_inicial, status, encerrado_em, criado_em",
+          "id, categoria_id, tipo, frequencia, descricao_enc, observacao_enc, modelo_enc, valor_parcela, valor_anual, parcelas_por_ano, valor_variavel, total_parcelas, primeira_parcela, data_vencimento_inicial, saldo_informado, saldo_informado_em, taxa_juros_mensal, taxa_estimada, status, encerrado_em, criado_em",
         )
         .order("criado_em")
         .range(de, ate),
@@ -54,6 +61,10 @@ export async function exportarMeusDados() {
     sobre: "Exportação dos seus dados no FinView (LGPD, art. 18, V). Valores em reais; datas no formato AAAA-MM-DD.",
     gerado_em: new Date().toISOString(),
     conta: { email: usuario.email },
+    notificacoes: {
+      preferencias,
+      aparelhos: aparelhos.map((a) => ({ aparelho: a.dispositivo, ativado_em: a.criado_em })),
+    },
     categorias: categorias.map((c) => ({
       id: c.id,
       nome: decifrar(c.nome_enc, id),
@@ -77,6 +88,10 @@ export async function exportarMeusDados() {
       total_parcelas: c.total_parcelas,
       primeira_parcela: c.primeira_parcela,
       primeiro_vencimento: c.data_vencimento_inicial,
+      saldo_devedor_informado: c.saldo_informado === null ? null : Number(c.saldo_informado),
+      saldo_informado_em: c.saldo_informado_em,
+      juros_ao_mes_percentual: c.taxa_juros_mensal === null ? null : Number(c.taxa_juros_mensal),
+      juros_estimados_pelo_app: c.taxa_estimada,
       status: c.status,
       encerrado_em: c.encerrado_em,
       criado_em: c.criado_em,

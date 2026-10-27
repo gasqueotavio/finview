@@ -22,6 +22,8 @@ export function FormCompromisso({ modelo, categorias }: Props) {
   const v = estado.valores;
   const [tipo, setTipo] = useState<TipoCompromisso>((v?.tipo as TipoCompromisso) ?? modelo?.tipo ?? "fixo");
   const temPrazo = TIPOS_COMPROMISSO[tipo].temPrazo;
+  const comJuros = Boolean(TIPOS_COMPROMISSO[tipo].comJuros);
+  const exigeTaxa = Boolean(TIPOS_COMPROMISSO[tipo].exigeTaxa);
   const anual = tipo === "anual";
   const categoriaPadrao = categorias.find((c) => c.chave === modelo?.categoria)?.id ?? "";
   const erro = (campo: string) => estado.erros?.[campo]?.[0];
@@ -94,7 +96,10 @@ export function FormCompromisso({ modelo, categorias }: Props) {
         </div>
       </GrupoFormulario>
 
-      <GrupoFormulario titulo="Cobrança" descricao={temPrazo ? "Já pagou algumas? Informe em qual parcela está." : undefined}>
+      <GrupoFormulario
+        titulo="Cobrança"
+        descricao={temPrazo ? "Já pagou algumas? Informe em qual parcela está. Não sabe o total? Informe só o saldo devedor." : undefined}
+      >
         <div className="grid gap-4 sm:grid-cols-2">
           {anual ? (
             <Campo rotulo="Como vai pagar este ano" htmlFor="parcelasPorAno" erro={erro("parcelasPorAno")}>
@@ -135,7 +140,7 @@ export function FormCompromisso({ modelo, categorias }: Props) {
 
           {temPrazo && (
             <>
-              <Campo rotulo="Total de parcelas" htmlFor="totalParcelas" erro={erro("totalParcelas")}>
+              <Campo rotulo="Total de parcelas" htmlFor="totalParcelas" erro={erro("totalParcelas")} ajuda="Opcional se informar o saldo devedor.">
                 <Input
                   id="totalParcelas"
                   name="totalParcelas"
@@ -167,6 +172,46 @@ export function FormCompromisso({ modelo, categorias }: Props) {
                   className={estiloInput}
                 />
               </Campo>
+              <Campo
+                rotulo="Saldo devedor hoje (opcional)"
+                htmlFor="saldoDevedor"
+                erro={erro("saldoDevedor")}
+                ajuda="O valor que o banco ou a administradora mostra hoje. As parcelas pagas a partir de amanhã são descontadas dele."
+                className={comJuros ? undefined : "sm:col-span-2"}
+              >
+                <Input
+                  id="saldoDevedor"
+                  name="saldoDevedor"
+                  inputMode="decimal"
+                  placeholder="Ex.: 47.000,00"
+                  defaultValue={v?.saldoDevedor ?? ""}
+                  aria-invalid={Boolean(erro("saldoDevedor"))}
+                  className={estiloInput}
+                />
+              </Campo>
+              {comJuros && (
+                <Campo
+                  rotulo={exigeTaxa ? "Juros ao mês, em %" : "Juros ao mês, em % (opcional)"}
+                  htmlFor="taxaJuros"
+                  erro={erro("taxaJuros")}
+                  ajuda={
+                    exigeTaxa
+                      ? "Está no contrato ou no app do banco (ex.: 1,49). Sem juros? Digite 0."
+                      : "Parcelado com juros? Informe a taxa do contrato (ex.: 1,99). Sem juros, deixe em branco."
+                  }
+                >
+                  <Input
+                    id="taxaJuros"
+                    name="taxaJuros"
+                    inputMode="decimal"
+                    placeholder="Ex.: 1,49"
+                    required={exigeTaxa}
+                    defaultValue={v?.taxaJuros ?? ""}
+                    aria-invalid={Boolean(erro("taxaJuros"))}
+                    className={estiloInput}
+                  />
+                </Campo>
+              )}
             </>
           )}
         </div>

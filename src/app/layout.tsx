@@ -20,6 +20,12 @@ const plexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "FinView",
   description: "Controle financeiro pessoal",
+  icons: {
+    icon: [{ url: "/icones/icone-192.png", sizes: "192x192", type: "image/png" }],
+    apple: "/icones/apple-touch-icon.png",
+  },
+  // iPhone: abre em tela cheia quando instalado na tela de início.
+  appleWebApp: { capable: true, title: "FinView", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {

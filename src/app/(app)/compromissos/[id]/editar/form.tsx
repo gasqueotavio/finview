@@ -8,12 +8,15 @@ import { AreaTexto, Campo, CampoValor, GrupoFormulario, Interruptor, RodapeFormu
 import { Painel } from "@/components/app/painel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TIPOS_COMPROMISSO } from "@/lib/catalogo";
 import type { Categoria } from "@/lib/dados/categorias";
 import type { CompromissoEditavel } from "@/lib/dados/compromissos";
+import { formatarData } from "@/lib/formato";
 import { editarCompromisso, excluirCompromisso, type EstadoForm } from "../../actions";
 
 const estadoInicial: EstadoForm = {};
 const formatarValor = (n: number) => n.toFixed(2).replace(".", ",");
+const formatarTaxa = (n: number) => n.toLocaleString("pt-BR", { maximumFractionDigits: 2 });
 
 export function FormEditarCompromisso({ compromisso: c, categorias }: { compromisso: CompromissoEditavel; categorias: Categoria[] }) {
   const [estado, acao, pendente] = useActionState(editarCompromisso, estadoInicial);
@@ -22,6 +25,11 @@ export function FormEditarCompromisso({ compromisso: c, categorias }: { compromi
   const erro = (campo: string) => estado.erros?.[campo]?.[0];
   const anual = c.tipo === "anual";
   const ativo = c.status === "ativo";
+  const temSaldo = ativo && TIPOS_COMPROMISSO[c.tipo].temPrazo;
+  const saldoAtual = c.saldoDevedor === null ? "" : formatarValor(c.saldoDevedor);
+  const comJuros = temSaldo && Boolean(TIPOS_COMPROMISSO[c.tipo].comJuros);
+  const taxaAtual = c.taxaJuros === null ? "" : formatarTaxa(c.taxaJuros);
+  const exigeTaxa = comJuros && Boolean(TIPOS_COMPROMISSO[c.tipo].exigeTaxa);
 
   return (
     <>
@@ -60,6 +68,64 @@ export function FormEditarCompromisso({ compromisso: c, categorias }: { compromi
         )}
         {/* Encerrado: mantém a marcação atual (o campo não aparece) */}
         {!ativo && c.valorVariavel && <input type="hidden" name="valorVariavel" value="on" />}
+
+        {temSaldo && (
+          <GrupoFormulario
+            titulo="Saldo devedor"
+            descricao={
+              c.saldoInformadoEm
+                ? `Informado em ${formatarData(c.saldoInformadoEm)}; as parcelas pagas depois disso já foram descontadas.`
+                : "Estimado pelas parcelas que faltam. Informe o saldo do banco para ficar exato (com os juros)."
+            }
+          >
+            <input type="hidden" name="saldoOriginal" value={saldoAtual} />
+            <Campo
+              rotulo="Quanto falta pagar hoje"
+              htmlFor="saldoDevedor"
+              erro={erro("saldoDevedor")}
+              ajuda="Mudou? Atualize com o valor do extrato: ele vira o novo ponto de partida."
+            >
+              <Input
+                id="saldoDevedor"
+                name="saldoDevedor"
+                inputMode="decimal"
+                defaultValue={v?.saldoDevedor ?? saldoAtual}
+                aria-invalid={Boolean(erro("saldoDevedor"))}
+                className={estiloInput}
+              />
+            </Campo>
+            {comJuros && (
+              <>
+                <input type="hidden" name="taxaOriginal" value={taxaAtual} />
+                <Campo
+                  rotulo="Juros ao mês, em %"
+                  htmlFor="taxaJuros"
+                  erro={erro("taxaJuros")}
+                  ajuda={
+                    c.taxaEstimada
+                      ? "Calculada pelo app com o saldo e as parcelas que faltam. Se souber a taxa do contrato, informe aqui."
+                      : c.taxaJuros !== null
+                        ? "Taxa do contrato: de cada parcela, só o que passa dos juros abate o saldo."
+                        : exigeTaxa
+                          ? "Informe a taxa do contrato ou do app do banco (ex.: 1,49). Sem juros? Digite 0."
+                          : "Sem juros: cada parcela abate o valor inteiro. Informe a taxa do contrato (ex.: 1,99)."
+                  }
+                >
+                  <Input
+                    id="taxaJuros"
+                    name="taxaJuros"
+                    inputMode="decimal"
+                    placeholder="Ex.: 1,49"
+                    required={exigeTaxa}
+                    defaultValue={v?.taxaJuros ?? taxaAtual}
+                    aria-invalid={Boolean(erro("taxaJuros"))}
+                    className={estiloInput}
+                  />
+                </Campo>
+              </>
+            )}
+          </GrupoFormulario>
+        )}
 
         <GrupoFormulario titulo="Detalhes" descricao="O novo nome aparece também nas parcelas já pagas.">
           <Campo rotulo="Descrição" htmlFor="descricao" erro={erro("descricao")}>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { AreaTexto, Campo, CampoValor, GrupoFormulario, Interruptor, RodapeFormulario, Selecao, estiloInput } from "@/components/app/campos";
 import { CampoData } from "@/components/app/campo-data";
 import { Button } from "@/components/ui/button";
@@ -15,15 +15,37 @@ export function FormAvulso({ categorias, hoje }: { categorias: Categoria[]; hoje
   const v = estado.valores;
   const erro = (campo: string) => estado.erros?.[campo]?.[0];
 
+  // "Já está pago" acompanha a data: hoje ou antes = gasto feito; depois de hoje = conta a pagar.
+  // Se a pessoa mexer no interruptor, a escolha dela passa a valer e a data não muda mais nada.
+  const [data, setData] = useState(v?.dataVencimento ?? hoje);
+  const [jaPago, setJaPago] = useState(v ? v.jaPago === "on" : true);
+  const [escolhaManual, setEscolhaManual] = useState(Boolean(v));
+  const futura = data > hoje;
+
+  function mudarData(nova: string) {
+    setData(nova);
+    if (!escolhaManual && nova) setJaPago(nova <= hoje);
+  }
+
   return (
     <form action={acao} className="flex flex-col">
       <GrupoFormulario titulo="Valor">
         <CampoValor id="valor" name="valor" rotulo="Quanto foi?" defaultValue={v?.valor} erro={erro("valor")} autoFocus />
         <Interruptor
           name="jaPago"
-          defaultChecked={v ? v.jaPago === "on" : true}
+          checked={jaPago}
+          onCheckedChange={(marcado) => {
+            setJaPago(marcado);
+            setEscolhaManual(true);
+          }}
           titulo="Já está pago"
-          descricao="Desligue para registrar algo que ainda vai vencer."
+          descricao={
+            futura && !jaPago
+              ? "Data no futuro: fica como conta a pagar e entra nos lembretes."
+              : futura
+                ? "Marcado como pago, mesmo com a data no futuro."
+                : "Desligue para registrar algo que ainda vai vencer."
+          }
         />
       </GrupoFormulario>
 
@@ -55,7 +77,8 @@ export function FormAvulso({ categorias, hoje }: { categorias: Categoria[]; hoje
             <CampoData
               id="dataVencimento"
               name="dataVencimento"
-              defaultValue={v?.dataVencimento ?? hoje}
+              value={data}
+              onChange={mudarData}
               invalido={Boolean(erro("dataVencimento"))}
             />
           </Campo>

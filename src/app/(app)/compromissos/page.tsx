@@ -67,7 +67,7 @@ async function Conteudo() {
         <Indicador rotulo="Comprometido por mês" nota="anuais divididos por 12">
           <Valor valor={comprometidoMensal} />
         </Indicador>
-        <Indicador rotulo="Saldo devedor" nota="parcelas que faltam">
+        <Indicador rotulo="Saldo devedor" nota="financiamentos, consórcios e parcelas">
           <Valor valor={saldoDevedor} />
         </Indicador>
         <Indicador rotulo="Ativos" nota={`${encerrados.length} encerrados`} className="hidden md:block">

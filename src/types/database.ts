@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      agenda_links: {
+        Row: {
+          criado_em: string
+          token_hash: string
+          user_id: string
+        }
+        Insert: {
+          criado_em?: string
+          token_hash: string
+          user_id?: string
+        }
+        Update: {
+          criado_em?: string
+          token_hash?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       categorias: {
         Row: {
           arquivada: boolean
@@ -64,7 +82,11 @@ export type Database = {
           observacao_enc: string | null
           parcelas_por_ano: number | null
           primeira_parcela: number
+          saldo_informado: number | null
+          saldo_informado_em: string | null
           status: Database["public"]["Enums"]["status_compromisso"]
+          taxa_estimada: boolean
+          taxa_juros_mensal: number | null
           tipo: Database["public"]["Enums"]["tipo_compromisso"]
           total_parcelas: number | null
           user_id: string
@@ -85,7 +107,11 @@ export type Database = {
           observacao_enc?: string | null
           parcelas_por_ano?: number | null
           primeira_parcela?: number
+          saldo_informado?: number | null
+          saldo_informado_em?: string | null
           status?: Database["public"]["Enums"]["status_compromisso"]
+          taxa_estimada?: boolean
+          taxa_juros_mensal?: number | null
           tipo: Database["public"]["Enums"]["tipo_compromisso"]
           total_parcelas?: number | null
           user_id?: string
@@ -106,7 +132,11 @@ export type Database = {
           observacao_enc?: string | null
           parcelas_por_ano?: number | null
           primeira_parcela?: number
+          saldo_informado?: number | null
+          saldo_informado_em?: string | null
           status?: Database["public"]["Enums"]["status_compromisso"]
+          taxa_estimada?: boolean
+          taxa_juros_mensal?: number | null
           tipo?: Database["public"]["Enums"]["tipo_compromisso"]
           total_parcelas?: number | null
           user_id?: string
@@ -206,6 +236,102 @@ export type Database = {
           },
         ]
       }
+      notificacao_preferencias: {
+        Row: {
+          atrasadas: boolean
+          atualizado_em: string
+          mostrar_detalhes: boolean
+          no_dia: boolean
+          tres_dias_antes: boolean
+          um_dia_antes: boolean
+          user_id: string
+        }
+        Insert: {
+          atrasadas?: boolean
+          atualizado_em?: string
+          mostrar_detalhes?: boolean
+          no_dia?: boolean
+          tres_dias_antes?: boolean
+          um_dia_antes?: boolean
+          user_id?: string
+        }
+        Update: {
+          atrasadas?: boolean
+          atualizado_em?: string
+          mostrar_detalhes?: boolean
+          no_dia?: boolean
+          tres_dias_antes?: boolean
+          um_dia_antes?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notificacoes_enviadas: {
+        Row: {
+          dia: string
+          lancamento_id: string
+          tipo: string
+          user_id: string
+        }
+        Insert: {
+          dia: string
+          lancamento_id: string
+          tipo: string
+          user_id: string
+        }
+        Update: {
+          dia?: string
+          lancamento_id?: string
+          tipo?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notificacoes_enviadas_lancamento_id_fkey"
+            columns: ["lancamento_id"]
+            isOneToOne: false
+            referencedRelation: "lancamentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notificacoes_enviadas_lancamento_id_fkey"
+            columns: ["lancamento_id"]
+            isOneToOne: false
+            referencedRelation: "vw_lancamentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      push_inscricoes: {
+        Row: {
+          auth: string
+          criado_em: string
+          dispositivo: string | null
+          endpoint: string
+          id: string
+          p256dh: string
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          criado_em?: string
+          dispositivo?: string | null
+          endpoint: string
+          id?: string
+          p256dh: string
+          user_id?: string
+        }
+        Update: {
+          auth?: string
+          criado_em?: string
+          dispositivo?: string | null
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       vw_compromissos_resumo: {
@@ -227,7 +353,11 @@ export type Database = {
           primeira_parcela: number | null
           proximo_vencimento: string | null
           saldo_devedor: number | null
+          saldo_informado: number | null
+          saldo_informado_em: string | null
           status: Database["public"]["Enums"]["status_compromisso"] | null
+          taxa_estimada: boolean | null
+          taxa_juros_mensal: number | null
           tipo: Database["public"]["Enums"]["tipo_compromisso"] | null
           total_pago: number | null
           total_parcelas: number | null
@@ -364,6 +494,19 @@ export type Database = {
         Returns: undefined
       }
       excluir_minha_conta: { Args: never; Returns: undefined }
+      feed_agenda: {
+        Args: { p_token_hash: string }
+        Returns: {
+          data_vencimento: string
+          descricao_enc: string
+          lancamento_id: string
+          status: Database["public"]["Enums"]["status_lancamento"]
+          user_id: string
+          valor: number
+          valor_estimado: boolean
+          valor_pago: number
+        }[]
+      }
       gerar_lancamentos: {
         Args: { p_compromisso_id: string; p_horizonte?: string }
         Returns: number
@@ -384,6 +527,19 @@ export type Database = {
         Args: { f: Database["public"]["Enums"]["frequencia"] }
         Returns: number
       }
+      notificacoes_do_dia: {
+        Args: { p_hoje: string }
+        Returns: {
+          data_vencimento: string
+          descricao_enc: string
+          lancamento_id: string
+          mostrar_detalhes: boolean
+          tipo: string
+          user_id: string
+          valor: number
+          valor_estimado: boolean
+        }[]
+      }
       pagar_lancamento: {
         Args: { p_data: string; p_lancamento_id: string; p_valor_pago: number }
         Returns: undefined
@@ -397,6 +553,15 @@ export type Database = {
         }
         Returns: string
       }
+      registrar_push: {
+        Args: {
+          p_auth: string
+          p_dispositivo?: string
+          p_endpoint: string
+          p_p256dh: string
+        }
+        Returns: undefined
+      }
       replanejar_ano: {
         Args: {
           p_ano: number
@@ -405,6 +570,10 @@ export type Database = {
           p_primeiro_vencimento: string
           p_valor_total: number
         }
+        Returns: number
+      }
+      saldo_devedor_atual: {
+        Args: { p_compromisso_id: string }
         Returns: number
       }
       valor_da_parcela: {

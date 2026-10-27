@@ -65,3 +65,40 @@ export function provisaoMensal(total: number, hoje: string, vencimento: string):
   const meses = Math.max(1, (a2 - a1) * 12 + (m2 - m1));
   return { meses, porMes: Math.ceil((total / meses) * 100) / 100 };
 }
+
+// ---------------------------------------------------------------------------
+// Tabela Price (parcela fixa): saldo = parcela × (1 − (1 + i)^−n) / i
+
+/** Valor presente de n parcelas iguais à taxa i (ao mês, em fração: 0,015 = 1,5%). */
+export function valorPresente(parcela: number, n: number, i: number) {
+  return i === 0 ? parcela * n : (parcela * (1 - (1 + i) ** -n)) / i;
+}
+
+/**
+ * Taxa mensal (em %) que faz n parcelas de `parcela` quitarem exatamente `saldo`.
+ * Null quando não há juros a estimar (o saldo é maior ou igual à soma das parcelas).
+ */
+export function taxaImplicita(saldo: number, parcela: number, n: number): number | null {
+  if (saldo <= 0 || parcela <= 0 || n <= 0 || saldo >= parcela * n) return null;
+  // O valor presente cai conforme a taxa sobe: busca binária entre 0% e 20% ao mês.
+  let baixo = 0;
+  let alto = 0.2;
+  if (valorPresente(parcela, n, alto) > saldo) return null; // juros acima de 20% a.m.: dado inconsistente
+  for (let k = 0; k < 100; k++) {
+    const meio = (baixo + alto) / 2;
+    if (valorPresente(parcela, n, meio) > saldo) baixo = meio;
+    else alto = meio;
+  }
+  return Math.round(((baixo + alto) / 2) * 100 * 100_000) / 100_000;
+}
+
+/** Quantas parcelas faltam para quitar `saldo` à taxa mensal (em %). Arredonda para cima. */
+export function parcelasParaQuitar(saldo: number, parcela: number, taxaPercentual: number): number | null {
+  if (saldo <= 0) return 0;
+  const i = taxaPercentual / 100;
+  if (i === 0) return Math.ceil(saldo / parcela - 1e-3);
+  // Só os juros já consomem a parcela inteira: nunca quita.
+  if (saldo * i >= parcela) return null;
+  // Tolerância: centavos de arredondamento no saldo não devem criar uma parcela extra.
+  return Math.ceil(-Math.log(1 - (saldo * i) / parcela) / Math.log(1 + i) - 1e-3);
+}

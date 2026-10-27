@@ -3,7 +3,7 @@ import { getUsuario } from "@/lib/auth";
 import type { Frequencia, TipoCompromisso } from "@/lib/catalogo";
 import { decifrar, decifrarOpcional } from "@/lib/crypto";
 import { createClient } from "@/lib/supabase/server";
-import type { LinhaCompromissoResumo } from "@/types/views";
+import type { LinhaCompromissoResumo, SemNulos } from "@/types/views";
 
 // Itens do catálogo que o usuário já tem como compromisso ativo.
 export async function modelosCadastrados(): Promise<Set<string>> {
@@ -37,6 +37,10 @@ export type ResumoCompromisso = {
   parcelasAtrasadas: number;
   totalPago: number;
   saldoDevedor: number | null;
+  /** O saldo vem do número informado pelo usuário (extrato do banco), e não da conta das parcelas. */
+  saldoInformado: boolean;
+  /** Juros ao mês (%) usados no saldo; null = sem juros. */
+  taxaJuros: number | null;
   proximoVencimento: string | null;
   /** Quanto pesa por mês, convertendo frequências e contas anuais para base mensal. */
   equivalenteMensal: number;
@@ -51,7 +55,7 @@ export async function listarCompromissos(): Promise<ResumoCompromisso[]> {
   const { data, error } = await supabase
     .from("vw_compromissos_resumo")
     .select(
-      "id, tipo, categoria_id, descricao_enc, frequencia, valor_parcela, valor_variavel, total_parcelas, valor_anual, parcelas_por_ano, status, encerrado_em, parcelas_pagas, parcelas_atrasadas, total_pago, saldo_devedor, proximo_vencimento",
+      "id, tipo, categoria_id, descricao_enc, frequencia, valor_parcela, valor_variavel, total_parcelas, valor_anual, parcelas_por_ano, status, encerrado_em, parcelas_pagas, parcelas_atrasadas, total_pago, saldo_devedor, saldo_informado, taxa_juros_mensal, proximo_vencimento",
     );
   if (error) throw error;
 
@@ -76,6 +80,8 @@ export async function listarCompromissos(): Promise<ResumoCompromisso[]> {
         parcelasAtrasadas: Number(c.parcelas_atrasadas),
         totalPago: Number(c.total_pago),
         saldoDevedor: c.saldo_devedor === null ? null : Number(c.saldo_devedor),
+        saldoInformado: c.saldo_informado !== null,
+        taxaJuros: c.taxa_juros_mensal === null ? null : Number(c.taxa_juros_mensal),
         proximoVencimento: c.proximo_vencimento,
         equivalenteMensal:
           Math.round(((valorAnual !== null ? valorAnual / 12 : valorParcela / MESES[c.frequencia as Frequencia])) * 100) / 100,
@@ -95,6 +101,12 @@ export type CompromissoEditavel = {
   valorVariavel: boolean;
   /** Quantas parcelas pagas seriam apagadas junto, se o compromisso for excluído. */
   parcelasPagas: number;
+  /** Saldo devedor atual (informado e já descontado, ou estimado pelas parcelas). */
+  saldoDevedor: number | null;
+  saldoInformadoEm: string | null;
+  taxaJuros: number | null;
+  /** A taxa foi calculada pelo app (saldo + parcelas), não informada do contrato. */
+  taxaEstimada: boolean;
 };
 
 export async function obterCompromisso(id: string): Promise<CompromissoEditavel | null> {
@@ -102,12 +114,13 @@ export async function obterCompromisso(id: string): Promise<CompromissoEditavel 
   const supabase = await createClient();
 
   const { data: c, error } = await supabase
-    .from("compromissos")
-    .select("id, tipo, status, categoria_id, descricao_enc, observacao_enc, valor_parcela, valor_variavel")
+    .from("vw_compromissos_resumo")
+    .select("id, tipo, status, categoria_id, descricao_enc, observacao_enc, valor_parcela, valor_variavel, saldo_devedor, saldo_informado_em, taxa_juros_mensal, taxa_estimada")
     .eq("id", id)
     .maybeSingle();
   if (error) throw error;
   if (!c) return null;
+  const linha = c as SemNulos<typeof c, "id" | "tipo" | "status" | "descricao_enc" | "valor_parcela" | "valor_variavel">;
 
   const { count, error: erroContagem } = await supabase
     .from("lancamentos")
@@ -117,14 +130,18 @@ export async function obterCompromisso(id: string): Promise<CompromissoEditavel 
   if (erroContagem) throw erroContagem;
 
   return {
-    id: c.id,
-    tipo: c.tipo,
-    status: c.status,
-    categoriaId: c.categoria_id,
-    descricao: decifrar(c.descricao_enc, usuario.id),
-    observacao: decifrarOpcional(c.observacao_enc, usuario.id),
-    valorParcela: Number(c.valor_parcela),
-    valorVariavel: c.valor_variavel,
+    id: linha.id,
+    tipo: linha.tipo,
+    status: linha.status,
+    categoriaId: linha.categoria_id,
+    descricao: decifrar(linha.descricao_enc, usuario.id),
+    observacao: decifrarOpcional(linha.observacao_enc, usuario.id),
+    valorParcela: Number(linha.valor_parcela),
+    valorVariavel: linha.valor_variavel,
     parcelasPagas: count ?? 0,
+    saldoDevedor: linha.saldo_devedor === null ? null : Number(linha.saldo_devedor),
+    saldoInformadoEm: linha.saldo_informado_em,
+    taxaJuros: linha.taxa_juros_mensal === null ? null : Number(linha.taxa_juros_mensal),
+    taxaEstimada: Boolean(linha.taxa_estimada),
   };
 }

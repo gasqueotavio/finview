@@ -13,12 +13,14 @@ export type TipoCompromisso =
 
 export type Frequencia = "mensal" | "bimestral" | "trimestral" | "semestral" | "anual";
 
-export const TIPOS_COMPROMISSO: Record<TipoCompromisso, { nome: string; temPrazo: boolean }> = {
+// comJuros: tipos em que faz sentido informar a taxa (o saldo cai menos que a parcela).
+// exigeTaxa: a taxa é obrigatória (sempre há juros e ela consta no contrato; sem juros, digita 0).
+export const TIPOS_COMPROMISSO: Record<TipoCompromisso, { nome: string; temPrazo: boolean; comJuros?: boolean; exigeTaxa?: boolean }> = {
   fixo: { nome: "Conta fixa", temPrazo: false },
   assinatura: { nome: "Assinatura", temPrazo: false },
-  financiamento: { nome: "Financiamento", temPrazo: true },
-  emprestimo: { nome: "Empréstimo", temPrazo: true },
-  parcelamento: { nome: "Parcelamento", temPrazo: true },
+  financiamento: { nome: "Financiamento", temPrazo: true, comJuros: true, exigeTaxa: true },
+  emprestimo: { nome: "Empréstimo", temPrazo: true, comJuros: true, exigeTaxa: true },
+  parcelamento: { nome: "Parcelamento", temPrazo: true, comJuros: true },
   consorcio: { nome: "Consórcio", temPrazo: true },
   anual: { nome: "Conta anual (cota única ou parcelada)", temPrazo: false },
 };

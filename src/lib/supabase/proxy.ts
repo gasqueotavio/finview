@@ -2,7 +2,8 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "@/types/database";
 
-const ROTAS_PUBLICAS = ["/login", "/cadastro", "/esqueci-senha", "/auth", "/privacidade", "/termos"];
+// /agenda e /api/cron se autenticam sozinhas (token do link e CRON_SECRET).
+const ROTAS_PUBLICAS = ["/login", "/cadastro", "/esqueci-senha", "/auth", "/privacidade", "/termos", "/agenda/", "/api/cron/"];
 
 // Renova o token de sessão a cada requisição e redireciona visitantes sem sessão.
 // É uma checagem otimista: a autorização de verdade é o RLS no banco.

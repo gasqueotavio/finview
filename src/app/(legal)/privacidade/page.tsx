@@ -36,6 +36,15 @@ export default function PrivacidadePage() {
           categorias, valores, datas de vencimento e de pagamento, número de parcelas e situação de cada conta.
         </li>
         <li>
+          <strong>Notificações (opcional):</strong> se você ativar os lembretes, guardamos o endereço de entrega que o seu
+          navegador gera para notificações, o nome do aparelho (por exemplo, &quot;Chrome no Android&quot;) e quando e como quer
+          ser avisado.
+        </li>
+        <li>
+          <strong>Link de agenda (opcional):</strong> se você gerar o link para o Google Agenda ou outra agenda, guardamos só
+          um código derivado dele (hash), nunca o link em si.
+        </li>
+        <li>
           <strong>Dados técnicos:</strong> endereço IP, tipo de navegador e horários de acesso, registrados pelos provedores de
           hospedagem e autenticação para segurança e funcionamento do serviço.
         </li>
@@ -49,6 +58,10 @@ export default function PrivacidadePage() {
         <li>
           <strong>Prestar o serviço</strong> (criar sua conta, guardar e mostrar suas contas, calcular totais, gerar parcelas
           recorrentes): execução de contrato com você (art. 7º, V, da LGPD).
+        </li>
+        <li>
+          <strong>Lembrar dos vencimentos</strong> por notificação e pelo link de agenda, quando você ativa esses recursos:
+          execução de contrato (art. 7º, V). Você desliga a qualquer momento em Minha conta.
         </li>
         <li>
           <strong>Enviar e-mails necessários</strong> (confirmação de cadastro e recuperação de senha): execução de contrato (art.
@@ -107,6 +120,16 @@ export default function PrivacidadePage() {
         <li>
           <strong>Provedor de envio de e-mails</strong>: para os e-mails de confirmação e recuperação de senha.
         </li>
+        <li>
+          <strong>Serviço de notificações do seu navegador</strong> (Google, Apple, Mozilla ou Microsoft, conforme o aparelho):
+          entrega os lembretes, se você os ativar. Com &quot;Mostrar nome e valor&quot; ligado, o texto do lembrete inclui o nome
+          e o valor da conta; desligado, só a quantidade de contas.
+        </li>
+        <li>
+          <strong>O aplicativo de agenda que você escolher</strong> (Google Agenda, Apple Calendar, Outlook): se você assinar o
+          link de agenda, ele passa a buscar os nomes, valores e datas das suas contas. Qualquer pessoa com o link vê esses
+          dados, por isso ele é longo e aleatório, só aparece uma vez e pode ser trocado ou desativado em Minha conta.
+        </li>
       </ul>
       <p>
         Como esses servidores ficam fora do Brasil, há transferência internacional de dados, feita com base no art. 33, IX, da
@@ -116,7 +139,8 @@ export default function PrivacidadePage() {
 
       <h2>6. Cookies</h2>
       <p>
-        Usamos apenas cookies essenciais, que mantêm você conectado à sua conta com segurança. Não usamos cookies de publicidade,
+        Usamos apenas cookies essenciais, que mantêm você conectado à sua conta com segurança, e um service worker (um
+        pequeno script do próprio FinView no navegador) que serve só para receber as notificações, se você ativá-las. Não usamos cookies de publicidade,
         de rastreamento ou de análise de terceiros.
       </p>
 
