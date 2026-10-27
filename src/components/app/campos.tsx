@@ -19,7 +19,7 @@ export function Campo({
 }) {
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
-      <Label htmlFor={htmlFor} className="text-[13px] font-medium text-foreground/90">
+      <Label htmlFor={htmlFor} className="text-[13px] font-medium">
         {rotulo}
       </Label>
       {children}
@@ -32,12 +32,17 @@ export function Campo({
   );
 }
 
+// 16px no celular evita o zoom automático do iOS ao focar o campo.
+const baseControle =
+  "h-10 w-full rounded-md border border-input bg-card px-3 text-base shadow-none outline-none transition-colors md:text-sm focus-visible:border-foreground/60 focus-visible:ring-3 focus-visible:ring-foreground/10 aria-invalid:border-destructive";
+
 /** Select nativo com o visual do Input (no celular abre o seletor do sistema, que é o mais fluido). */
 export function Selecao({ className, ...props }: React.ComponentProps<"select">) {
   return (
     <select
       className={cn(
-        "h-11 w-full appearance-none rounded-xl border border-input bg-card bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23888%22 stroke-width=%222.5%22><path d=%22m6 9 6 6 6-6%22/></svg>')] bg-[length:12px] bg-[right_0.9rem_center] bg-no-repeat pr-9 pl-3.5 text-[15px] outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 aria-invalid:border-destructive",
+        baseControle,
+        "seta-select appearance-none pr-8",
         className,
       )}
       {...props}
@@ -45,9 +50,13 @@ export function Selecao({ className, ...props }: React.ComponentProps<"select">)
   );
 }
 
-export const estiloInput = "h-11 rounded-xl bg-card px-3.5 text-[15px] md:text-[15px]";
+export const estiloInput = "h-10 rounded-md bg-card px-3 text-base shadow-none md:text-sm";
 
-/** Valor em destaque, no topo do formulário (padrão dos apps de banco). */
+export function AreaTexto({ className, ...props }: React.ComponentProps<"textarea">) {
+  return <textarea className={cn(baseControle, "h-auto py-2", className)} {...props} />;
+}
+
+/** Valor em destaque no topo do formulário, alinhado à esquerda como num extrato. */
 export function CampoValor({
   id,
   name,
@@ -64,12 +73,17 @@ export function CampoValor({
   autoFocus?: boolean;
 }) {
   return (
-    <div className="flex flex-col items-center gap-1 py-2 text-center">
-      <label htmlFor={id} className="text-sm font-medium text-muted-foreground">
+    <div className="flex flex-col gap-1">
+      <label htmlFor={id} className="text-[13px] font-medium">
         {rotulo}
       </label>
-      <div className="flex items-baseline justify-center gap-2">
-        <span className="text-2xl font-medium text-muted-foreground">R$</span>
+      <div
+        className={cn(
+          "flex items-baseline gap-2 border-b border-input pb-2 transition-colors focus-within:border-foreground",
+          erro && "border-critico focus-within:border-critico",
+        )}
+      >
+        <span className="text-xl text-muted-foreground">R$</span>
         <input
           id={id}
           name={name}
@@ -80,7 +94,7 @@ export function CampoValor({
           defaultValue={defaultValue}
           autoFocus={autoFocus}
           aria-invalid={Boolean(erro)}
-          className="w-[7ch] max-w-full min-w-[4ch] bg-transparent text-center text-5xl font-semibold tracking-tight tabular-nums outline-none [field-sizing:content] placeholder:text-muted-foreground/40 supports-[field-sizing:content]:w-auto aria-invalid:text-critico"
+          className="w-full min-w-0 bg-transparent text-[40px] leading-none font-medium tracking-[-0.035em] tabular-nums outline-none placeholder:text-muted-foreground/35 aria-invalid:text-critico"
         />
       </div>
       {erro && <p className="text-xs text-critico">{erro}</p>}
@@ -101,16 +115,46 @@ export function Interruptor({
   descricao?: React.ReactNode;
 }) {
   return (
-    <label className="flex cursor-pointer items-start justify-between gap-4">
+    <label className="flex cursor-pointer items-start justify-between gap-6">
       <span>
-        <span className="block text-[15px] font-medium">{titulo}</span>
+        <span className="block text-sm font-medium">{titulo}</span>
         {descricao && <span className="mt-0.5 block text-[13px] text-muted-foreground">{descricao}</span>}
       </span>
       <span className="relative mt-0.5 inline-flex shrink-0">
         <input type="checkbox" name={name} defaultChecked={defaultChecked} className="peer sr-only" />
-        <span className="h-7 w-12 rounded-full bg-input transition-colors peer-checked:bg-primary peer-focus-visible:ring-3 peer-focus-visible:ring-ring/40" />
-        <span className="absolute top-1 left-1 size-5 rounded-full bg-white shadow transition-transform peer-checked:translate-x-5" />
+        <span className="h-5 w-9 rounded-full bg-input transition-colors peer-checked:bg-primary peer-focus-visible:ring-3 peer-focus-visible:ring-foreground/20" />
+        <span className="absolute top-0.5 left-0.5 size-4 rounded-full bg-card shadow-sm transition-transform peer-checked:translate-x-4" />
       </span>
     </label>
+  );
+}
+
+/** Bloco de formulário: título pequeno à esquerda no desktop, campos à direita (padrão de páginas de configuração). */
+export function GrupoFormulario({
+  titulo,
+  descricao,
+  children,
+}: {
+  titulo: string;
+  descricao?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="grid gap-4 border-t py-6 first:border-t-0 first:pt-0 md:grid-cols-[180px_minmax(0,1fr)] md:gap-8">
+      <div>
+        <h2 className="text-sm font-semibold">{titulo}</h2>
+        {descricao && <p className="mt-1 text-[13px] text-muted-foreground">{descricao}</p>}
+      </div>
+      <div className="flex flex-col gap-4">{children}</div>
+    </section>
+  );
+}
+
+/** Botão de salvar: barra fixa acima das abas no celular; alinhado à direita no desktop. */
+export function RodapeFormulario({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] z-10 -mx-4 border-t bg-background/95 px-4 py-3 backdrop-blur md:static md:mx-0 md:flex md:justify-end md:bg-transparent md:px-0 md:pt-6 md:pb-0 md:backdrop-blur-none">
+      {children}
+    </div>
   );
 }

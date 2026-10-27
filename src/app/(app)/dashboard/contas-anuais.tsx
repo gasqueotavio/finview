@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { ArrowRight, BellRing, CalendarRange } from "lucide-react";
+import { ArrowRight, BellRing } from "lucide-react";
+import { Valor } from "@/components/app/dinheiro";
 import { listarProximosCiclosAnuais } from "@/lib/dados/contas-anuais";
 import { provisaoMensal } from "@/lib/financeiro";
-import { formatarData, formatarMoeda } from "@/lib/formato";
+import { formatarData } from "@/lib/formato";
 import { cn } from "@/lib/utils";
 
 // Antecedência para avisar que é hora de decidir entre cota única e parcelado.
@@ -17,9 +18,11 @@ export async function ContasAnuais({ hoje }: { hoje: string }) {
   const limite = limiteDecisao.toISOString().slice(0, 10);
 
   return (
-    <section className="flex flex-col gap-3">
-      <h2 className="text-base font-semibold">Contas anuais</h2>
-      <ul className="grid gap-3 md:grid-cols-2">
+    <section className="flex flex-col gap-1">
+      <div className="border-b pb-3">
+        <h2 className="text-[15px] font-semibold">Contas anuais</h2>
+      </div>
+      <ul className="divide-y">
         {ciclos.map((c) => {
           const futuro = c.primeiroVencimento > hoje;
           const decidir = !c.algumaPaga && futuro && c.primeiroVencimento <= limite;
@@ -27,49 +30,34 @@ export async function ContasAnuais({ hoje }: { hoje: string }) {
           const n = c.parcelas.length;
 
           return (
-            <li
-              key={`${c.compromissoId}:${c.ano}`}
-              className={cn(
-                "flex flex-col gap-3 rounded-2xl border bg-card p-4",
-                decidir && "border-alerta/40 ring-1 ring-alerta/20",
-              )}
-            >
-              <div className="flex items-start gap-3">
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-accent text-accent-foreground">
-                  <CalendarRange className="size-[18px]" />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium">
-                    {c.descricao} <span className="font-normal text-muted-foreground">{c.ano}</span>
-                  </p>
-                  <p className="text-[13px] text-muted-foreground">
-                    {n === 1 ? "Cota única" : `${n}x`} · {n === 1 ? "vence" : "1ª"} {formatarData(c.primeiroVencimento)}
-                  </p>
-                </div>
-                <p className="shrink-0 font-semibold tabular-nums">
-                  {c.estimado && <span className="font-normal text-muted-foreground">≈ </span>}
-                  {formatarMoeda(c.total)}
+            <li key={`${c.compromissoId}:${c.ano}`} className="flex flex-col gap-2 py-3.5">
+              <div className="flex items-baseline justify-between gap-3">
+                <p className="min-w-0 truncate text-sm font-medium">
+                  {c.descricao} <span className="dinheiro font-normal text-muted-foreground">{c.ano}</span>
                 </p>
+                <Valor valor={c.total} estimado={c.estimado} className="shrink-0 text-sm font-medium" />
               </div>
-
-              {provisao && provisao.meses > 1 && (
-                <p className="rounded-xl bg-muted/60 px-3 py-2 text-[13px] text-muted-foreground">
-                  Separe <strong className="font-semibold text-foreground tabular-nums">{formatarMoeda(provisao.porMes)}/mês</strong> nos
-                  próximos {provisao.meses} meses
-                </p>
-              )}
-
+              <p className="text-xs text-muted-foreground">
+                {n === 1 ? "Cota única" : `${n}x`} · {n === 1 ? "vence" : "1ª em"} {formatarData(c.primeiroVencimento)}
+                {provisao && provisao.meses > 1 && (
+                  <>
+                    <br />
+                    Separe <Valor valor={provisao.porMes} className="text-foreground" />
+                    /mês por {provisao.meses} meses
+                  </>
+                )}
+              </p>
               {!c.algumaPaga && (
                 <Link
                   href={`/compromissos/${c.compromissoId}/ano/${c.ano}`}
                   className={cn(
-                    "group flex items-center gap-2 text-sm font-medium text-primary",
+                    "group flex w-fit items-center gap-1.5 text-[13px] font-medium underline-offset-4 hover:underline",
                     decidir && "text-alerta",
                   )}
                 >
-                  {decidir && <BellRing className="size-4" />}
-                  {decidir ? "Hora de decidir: cota única ou parcelar?" : "Planejar pagamento"}
-                  <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
+                  {decidir && <BellRing className="size-3.5" />}
+                  {decidir ? "Decidir: cota única ou parcelar" : "Planejar pagamento"}
+                  <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
                 </Link>
               )}
             </li>

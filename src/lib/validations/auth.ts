@@ -25,3 +25,17 @@ export const cadastroSchema = z
     message: "As senhas não conferem",
     path: ["confirmacao"],
   });
+
+export const esqueciSenhaSchema = z.object({
+  email: z.email("E-mail inválido").trim().toLowerCase(),
+});
+
+export const novaSenhaSchema = z
+  .object({
+    senha: senhaSchema,
+    confirmacao: z.string(),
+  })
+  .refine((d) => d.senha === d.confirmacao, {
+    message: "As senhas não conferem",
+    path: ["confirmacao"],
+  });

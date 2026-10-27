@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { CircleCheck, Scale } from "lucide-react";
+import { CampoData } from "@/components/app/campo-data";
 import { Campo, Selecao, estiloInput } from "@/components/app/campos";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -65,14 +66,12 @@ export function FormPlanoAno({ compromissoId, ano, total, parcelas, primeiroVenc
             />
           </Campo>
           <Campo rotulo="Vencimento" htmlFor="dataCotaUnica" erro={erro("dataCotaUnica")}>
-            <Input
+            <CampoData
               id="dataCotaUnica"
               name="dataCotaUnica"
-              type="date"
               value={dataCotaUnica}
-              onChange={(e) => setDataCotaUnica(e.target.value)}
-              aria-invalid={Boolean(erro("dataCotaUnica"))}
-              className={estiloInput}
+              onChange={setDataCotaUnica}
+              invalido={Boolean(erro("dataCotaUnica"))}
             />
           </Campo>
           {desconto > 0 && (
@@ -103,28 +102,26 @@ export function FormPlanoAno({ compromissoId, ano, total, parcelas, primeiroVenc
               </Selecao>
             </Campo>
             <Campo rotulo="1ª parcela" htmlFor="dataPrimeiraParcela" erro={erro("dataPrimeiraParcela")}>
-              <Input
+              <CampoData
                 id="dataPrimeiraParcela"
                 name="dataPrimeiraParcela"
-                type="date"
                 value={dataPrimeira}
-                onChange={(e) => setDataPrimeira(e.target.value)}
-                aria-invalid={Boolean(erro("dataPrimeiraParcela"))}
-                className={estiloInput}
+                onChange={setDataPrimeira}
+                invalido={Boolean(erro("dataPrimeiraParcela"))}
               />
             </Campo>
           </div>
           {n >= 2 && parcelado > 0 && (
             <p className="text-[13px] text-muted-foreground">
-              {n}x de <span className="font-medium text-foreground tabular-nums">{formatarMoeda(parcelado / n)}</span>
+              {n}x de <span className="dinheiro text-foreground">{formatarMoeda(parcelado / n)}</span>
             </p>
           )}
         </Opcao>
       </div>
 
-      <section className="flex flex-col gap-3 rounded-3xl border bg-card p-5">
+      <section className="flex flex-col gap-3 rounded-lg border bg-card p-4 md:p-5">
         <div className="flex items-center gap-2 font-semibold">
-          <Scale className="size-[18px] text-primary" />
+          <Scale className="size-4" />
           Qual compensa?
         </div>
         <label className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
@@ -133,14 +130,14 @@ export function FormPlanoAno({ compromissoId, ano, total, parcelas, primeiroVenc
             inputMode="decimal"
             value={rendimento}
             onChange={(e) => setRendimento(e.target.value)}
-            className="h-9 w-16 rounded-lg text-center"
+            className="dinheiro h-8 w-16 rounded-md text-center"
             aria-label="Rendimento anual em porcentagem"
           />
           % ao ano, já sem IR
         </label>
         {comparacao && (
-          <p aria-live="polite" className="flex gap-2 text-[15px]">
-            <CircleCheck className="mt-0.5 size-[18px] shrink-0 text-sucesso" />
+          <p aria-live="polite" className="flex gap-2 border-t pt-3 text-sm">
+            <CircleCheck className="mt-0.5 size-4 shrink-0 text-sucesso" />
             <span>
               {melhor === "cota_unica" && (
                 <>
@@ -181,7 +178,7 @@ export function FormPlanoAno({ compromissoId, ano, total, parcelas, primeiroVenc
           size="lg"
           disabled={pendente}
           variant={melhor === "parcelado" ? "outline" : "default"}
-          className="h-12 rounded-2xl text-[15px] font-semibold"
+          className="h-11 rounded-md text-sm"
         >
           Vou pagar à vista
         </Button>
@@ -191,7 +188,7 @@ export function FormPlanoAno({ compromissoId, ano, total, parcelas, primeiroVenc
           size="lg"
           disabled={pendente}
           variant={melhor === "parcelado" ? "default" : "outline"}
-          className="h-12 rounded-2xl text-[15px] font-semibold"
+          className="h-11 rounded-md text-sm"
         >
           Vou parcelar em {numParcelas}x
         </Button>
@@ -204,17 +201,17 @@ function Opcao({ titulo, destaque, children }: { titulo: string; destaque: boole
   return (
     <fieldset
       className={cn(
-        "flex flex-col gap-3 rounded-3xl border bg-card p-5 transition-colors",
-        destaque && "border-primary/50 ring-2 ring-primary/15",
+        "flex flex-col gap-3 rounded-lg border bg-card p-4 transition-colors md:p-5",
+        destaque && "border-foreground/80 ring-1 ring-foreground/80",
       )}
     >
       <legend className="sr-only">{titulo}</legend>
       <div className="flex items-center justify-between">
-        <span className="font-semibold" aria-hidden>
+        <span className="text-sm font-semibold" aria-hidden>
           {titulo}
         </span>
         {destaque && (
-          <span className="rounded-full bg-accent px-2.5 py-0.5 text-xs font-semibold text-accent-foreground">Compensa mais</span>
+          <span className="rounded-[4px] bg-primary px-1.5 py-0.5 text-[11px] font-medium text-primary-foreground">Compensa mais</span>
         )}
       </div>
       {children}

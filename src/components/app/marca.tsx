@@ -1,14 +1,15 @@
 import { cn } from "@/lib/utils";
 
+/** Logotipo: um livro-caixa (linhas de lançamento) com a última conta ticada. */
 export function Marca({ className }: { className?: string }) {
   return (
-    <span className={cn("inline-flex items-center gap-2 text-lg font-semibold tracking-tight", className)}>
-      <span className="flex size-8 items-center justify-center rounded-[10px] bg-primary text-primary-foreground shadow-sm shadow-primary/30">
-        <svg viewBox="0 0 24 24" className="size-[18px]" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden>
-          <path d="M5 15.5 9.5 11l3.5 3.5L19 8.5" />
-        </svg>
-      </span>
-      FinView
+    <span className={cn("inline-flex items-center gap-2 text-[17px] font-semibold tracking-[-0.02em]", className)}>
+      <svg viewBox="0 0 20 20" className="size-5" aria-hidden>
+        <rect width="20" height="20" rx="5" fill="currentColor" />
+        <path d="M5 6.5h10M5 10h6" stroke="var(--background)" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="m11.8 13.6 1.6 1.5 2.6-3" fill="none" stroke="var(--background)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+      finview
     </span>
   );
 }

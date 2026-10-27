@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { CampoData } from "@/components/app/campo-data";
 import { Campo, estiloInput } from "@/components/app/campos";
 import { Painel } from "@/components/app/painel";
 import { Button } from "@/components/ui/button";
@@ -9,19 +11,32 @@ import { Input } from "@/components/ui/input";
 import { formatarMoeda } from "@/lib/formato";
 import { cancelarCompromisso, quitarCompromisso, type EstadoForm } from "./actions";
 
-type Props = { id: string; descricao: string; podeQuitar: boolean; saldoDevedor: number | null; hoje: string };
+type Props = { id: string; descricao: string; ativo: boolean; podeQuitar: boolean; saldoDevedor: number | null; hoje: string };
 
-export function AcoesCompromisso({ id, descricao, podeQuitar, saldoDevedor, hoje }: Props) {
+export function AcoesCompromisso({ id, descricao, ativo, podeQuitar, saldoDevedor, hoje }: Props) {
   const [painel, setPainel] = useState<"quitar" | "cancelar" | null>(null);
 
+  if (!ativo) {
+    return (
+      <div className="-mr-2 flex gap-0.5">
+        <Button variant="ghost" size="sm" className="rounded-md text-muted-foreground" asChild>
+          <Link href={`/compromissos/${id}/editar`}>Editar</Link>
+        </Button>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex gap-1">
+    <div className="-mr-2 flex gap-0.5">
+      <Button variant="ghost" size="sm" className="rounded-md" asChild>
+        <Link href={`/compromissos/${id}/editar`}>Editar</Link>
+      </Button>
       {podeQuitar && (
-        <Button variant="ghost" size="sm" className="rounded-lg text-primary" onClick={() => setPainel("quitar")}>
+        <Button variant="ghost" size="sm" className="rounded-md font-medium" onClick={() => setPainel("quitar")}>
           Quitar
         </Button>
       )}
-      <Button variant="ghost" size="sm" className="rounded-lg text-muted-foreground" onClick={() => setPainel("cancelar")}>
+      <Button variant="ghost" size="sm" className="rounded-md text-muted-foreground" onClick={() => setPainel("cancelar")}>
         Cancelar
       </Button>
 
@@ -60,8 +75,9 @@ function FormQuitar({ id, saldoDevedor, hoje, aoConcluir }: { id: string; saldoD
     <form action={acao} className="flex flex-col gap-4">
       <input type="hidden" name="compromissoId" value={id} />
       {saldoDevedor !== null && (
-        <p className="rounded-xl bg-muted/60 p-3 text-sm">
-          Saldo das parcelas restantes: <strong className="tabular-nums">{formatarMoeda(saldoDevedor)}</strong>
+        <p className="flex justify-between gap-4 border-y py-2.5 text-[13px]">
+          <span className="text-muted-foreground">Saldo das parcelas restantes</span>
+          <span className="dinheiro">{formatarMoeda(saldoDevedor)}</span>
         </p>
       )}
       <div className="grid grid-cols-2 gap-3">
@@ -76,7 +92,7 @@ function FormQuitar({ id, saldoDevedor, hoje, aoConcluir }: { id: string; saldoD
           />
         </Campo>
         <Campo rotulo="Data" htmlFor="dataQuitacao" erro={estado.erros?.data?.[0]}>
-          <Input id="dataQuitacao" name="data" type="date" defaultValue={estado.valores?.data ?? hoje} className={estiloInput} />
+          <CampoData id="dataQuitacao" name="data" defaultValue={estado.valores?.data ?? hoje} invalido={Boolean(estado.erros?.data)} />
         </Campo>
       </div>
       <p className="text-xs leading-relaxed text-muted-foreground">
@@ -84,7 +100,7 @@ function FormQuitar({ id, saldoDevedor, hoje, aoConcluir }: { id: string; saldoD
         ser descontados, então ele costuma ser menor que o saldo.
       </p>
       {estado.mensagem && <p className="text-sm text-critico">{estado.mensagem}</p>}
-      <Button size="lg" disabled={pendente} className="h-12 rounded-xl text-[15px]">
+      <Button size="lg" disabled={pendente} className="h-11 rounded-md text-sm">
         {pendente ? "Quitando…" : "Confirmar quitação"}
       </Button>
     </form>
@@ -100,14 +116,14 @@ function ConfirmarCancelamento({ id, aoConcluir }: { id: string; aoConcluir: () 
         As parcelas futuras ainda não pagas serão canceladas. O histórico do que já foi pago continua guardado.
       </p>
       <div className="grid grid-cols-2 gap-2">
-        <Button size="lg" variant="outline" className="h-12 rounded-xl" onClick={aoConcluir}>
+        <Button size="lg" variant="outline" className="h-11 rounded-md" onClick={aoConcluir}>
           Voltar
         </Button>
         <Button
           size="lg"
           variant="destructive"
           disabled={pendente}
-          className="h-12 rounded-xl"
+          className="h-11 rounded-md"
           onClick={() =>
             iniciar(async () => {
               const formData = new FormData();

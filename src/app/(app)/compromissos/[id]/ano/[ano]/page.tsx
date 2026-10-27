@@ -17,10 +17,10 @@ export default function PlanejarAnoPage({ params }: PageProps<"/compromissos/[id
     <Suspense
       fallback={
         <div className="flex flex-col gap-4" aria-busy aria-label="Carregando">
-          <Skeleton className="h-12 w-64" />
+          <Skeleton className="h-10 w-64 rounded-md" />
           <div className="grid gap-3 md:grid-cols-2">
-            <Skeleton className="h-56 rounded-3xl" />
-            <Skeleton className="h-56 rounded-3xl" />
+            <Skeleton className="h-56 rounded-lg" />
+            <Skeleton className="h-56 rounded-lg" />
           </div>
         </div>
       }
@@ -42,7 +42,7 @@ async function Conteudo({ params }: Pick<PageProps<"/compromissos/[id]/ano/[ano]
   const n = ciclo.parcelas.length;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex max-w-3xl flex-col gap-8">
       <Cabecalho
         voltarPara="/dashboard"
         titulo={`${ciclo.descricao} ${ano}`}
@@ -56,7 +56,7 @@ async function Conteudo({ params }: Pick<PageProps<"/compromissos/[id]/ano/[ano]
       />
 
       {ciclo.algumaPaga ? (
-        <p className="rounded-2xl border bg-card p-5 text-sm text-muted-foreground">
+        <p className="border-y py-5 text-sm text-muted-foreground">
           Já existe parcela paga neste ano, então o plano não pode mais mudar.
         </p>
       ) : (

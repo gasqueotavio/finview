@@ -14,11 +14,11 @@ export function CadastroForm() {
 
   if (estado.sucesso) {
     return (
-      <div aria-live="polite" className="flex flex-col items-center gap-3 rounded-2xl border bg-card p-6 text-center">
-        <span className="flex size-12 items-center justify-center rounded-full bg-sucesso-suave text-sucesso">
-          <MailCheck className="size-6" />
-        </span>
-        <p className="font-semibold">Confira seu e-mail</p>
+      <div aria-live="polite" className="flex flex-col gap-2 border-y py-6">
+        <p className="flex items-center gap-2 font-semibold">
+          <MailCheck className="size-4 text-sucesso" />
+          Confira seu e-mail
+        </p>
         <p className="text-sm text-muted-foreground">{estado.mensagem}</p>
       </div>
     );
@@ -41,12 +41,12 @@ export function CadastroForm() {
           {estado.mensagem}
         </p>
       )}
-      <Button size="lg" disabled={pendente} className="mt-1 h-12 rounded-xl text-[15px]">
+      <Button size="lg" disabled={pendente} className="mt-1 h-10 rounded-md text-sm">
         {pendente ? "Criando conta…" : "Criar conta"}
       </Button>
       <p className="mt-2 text-center text-sm text-muted-foreground">
         Já tem conta?{" "}
-        <Link href="/login" className="font-medium text-primary hover:underline">
+        <Link href="/login" className="font-medium text-foreground underline underline-offset-4">
           Entrar
         </Link>
       </p>

@@ -70,3 +70,13 @@ export const planoAnoSchema = z
       ctx.addIssue({ code: "custom", path: [campo], message: `O vencimento precisa ser em ${d.ano}` });
     }
   });
+
+// Edição: só o que não mexe no cronograma. Conta anual não manda "valor" (tem planejamento por ano).
+export const edicaoCompromissoSchema = z.object({
+  id: z.uuid(),
+  descricao: z.string().trim().min(1, "Informe uma descrição").max(120),
+  categoriaId: z.preprocess(opcional, z.uuid().optional()),
+  valor: z.preprocess(opcional, valorEmReais.optional()),
+  valorVariavel: z.preprocess((v) => v === "on", z.boolean()),
+  observacao: z.preprocess(opcional, z.string().trim().max(500).optional()),
+});

@@ -1,7 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
-import { Campo, CampoValor, Interruptor, Selecao, estiloInput } from "@/components/app/campos";
+import { AreaTexto, Campo, CampoValor, GrupoFormulario, Interruptor, RodapeFormulario, Selecao, estiloInput } from "@/components/app/campos";
+import { CampoData } from "@/components/app/campo-data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { Categoria } from "@/lib/dados/categorias";
@@ -15,20 +16,18 @@ export function FormAvulso({ categorias, hoje }: { categorias: Categoria[]; hoje
   const erro = (campo: string) => estado.erros?.[campo]?.[0];
 
   return (
-    <form action={acao} className="flex flex-col gap-4">
-      <section className="rounded-3xl border bg-card p-5">
+    <form action={acao} className="flex flex-col">
+      <GrupoFormulario titulo="Valor">
         <CampoValor id="valor" name="valor" rotulo="Quanto foi?" defaultValue={v?.valor} erro={erro("valor")} autoFocus />
-        <div className="mt-4 border-t pt-4">
-          <Interruptor
-            name="jaPago"
-            defaultChecked={v ? v.jaPago === "on" : true}
-            titulo="Já está pago"
-            descricao="Desligue para registrar algo que ainda vai vencer."
-          />
-        </div>
-      </section>
+        <Interruptor
+          name="jaPago"
+          defaultChecked={v ? v.jaPago === "on" : true}
+          titulo="Já está pago"
+          descricao="Desligue para registrar algo que ainda vai vencer."
+        />
+      </GrupoFormulario>
 
-      <section className="flex flex-col gap-4 rounded-3xl border bg-card p-5">
+      <GrupoFormulario titulo="Detalhes">
         <Campo rotulo="Descrição" htmlFor="descricao" erro={erro("descricao")}>
           <Input
             id="descricao"
@@ -41,7 +40,6 @@ export function FormAvulso({ categorias, hoje }: { categorias: Categoria[]; hoje
             className={estiloInput}
           />
         </Campo>
-
         <div className="grid gap-4 sm:grid-cols-2">
           <Campo rotulo="Categoria" htmlFor="categoriaId" erro={erro("categoriaId")}>
             <Selecao id="categoriaId" name="categoriaId" defaultValue={v?.categoriaId ?? ""}>
@@ -54,29 +52,28 @@ export function FormAvulso({ categorias, hoje }: { categorias: Categoria[]; hoje
             </Selecao>
           </Campo>
           <Campo rotulo="Data" htmlFor="dataVencimento" erro={erro("dataVencimento")}>
-            <Input
+            <CampoData
               id="dataVencimento"
               name="dataVencimento"
-              type="date"
-              required
               defaultValue={v?.dataVencimento ?? hoje}
-              aria-invalid={Boolean(erro("dataVencimento"))}
-              className={estiloInput}
+              invalido={Boolean(erro("dataVencimento"))}
             />
           </Campo>
         </div>
+      </GrupoFormulario>
 
-        <Campo rotulo="Observação (opcional)" htmlFor="observacao" erro={erro("observacao")}>
-          <textarea
-            id="observacao"
-            name="observacao"
-            rows={2}
-            maxLength={500}
-            defaultValue={v?.observacao ?? ""}
-            className="rounded-xl border border-input bg-card px-3.5 py-2.5 text-[15px] outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
-          />
-        </Campo>
-      </section>
+      <GrupoFormulario titulo="Observação" descricao="Opcional. Fica cifrada.">
+        <AreaTexto
+          id="observacao"
+          name="observacao"
+          aria-label="Observação"
+          rows={2}
+          maxLength={500}
+          defaultValue={v?.observacao ?? ""}
+          aria-invalid={Boolean(erro("observacao"))}
+        />
+        {erro("observacao") && <p className="text-xs text-critico">{erro("observacao")}</p>}
+      </GrupoFormulario>
 
       {estado.mensagem && (
         <p aria-live="polite" className="text-sm text-critico">
@@ -84,11 +81,11 @@ export function FormAvulso({ categorias, hoje }: { categorias: Categoria[]; hoje
         </p>
       )}
 
-      <div className="sticky bottom-20 z-10 -mx-4 bg-gradient-to-t from-background via-background to-transparent px-4 pt-6 pb-2 md:static md:mx-0 md:bg-none md:p-0">
-        <Button size="lg" disabled={pendente} className="h-13 w-full rounded-2xl text-base font-semibold shadow-lg shadow-primary/20">
+      <RodapeFormulario>
+        <Button size="lg" disabled={pendente} className="h-11 w-full rounded-md px-5 text-sm md:h-10 md:w-auto">
           {pendente ? "Salvando…" : "Salvar gasto"}
         </Button>
-      </div>
+      </RodapeFormulario>
     </form>
   );
 }

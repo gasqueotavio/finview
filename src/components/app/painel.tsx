@@ -33,12 +33,12 @@ export function Painel({ aberto, aoMudar, titulo, descricao, children }: Props) 
   if (desktop) {
     return (
       <Dialog open={aberto} onOpenChange={aoMudar}>
-        <DialogContent className="gap-0 rounded-2xl p-0 sm:max-w-md">
-          <DialogHeader className="px-6 pt-6 pb-2 text-left">
+        <DialogContent className="gap-0 rounded-xl p-0 shadow-xl sm:max-w-[440px]">
+          <DialogHeader className="border-b px-5 py-4 text-left">
             <DialogTitle>{titulo}</DialogTitle>
             {descricao ? <DialogDescription>{descricao}</DialogDescription> : null}
           </DialogHeader>
-          <div className="px-6 pb-6">{children}</div>
+          <div className="px-5 py-5">{children}</div>
         </DialogContent>
       </Dialog>
     );
@@ -46,12 +46,12 @@ export function Painel({ aberto, aoMudar, titulo, descricao, children }: Props) 
 
   return (
     <Drawer open={aberto} onOpenChange={aoMudar}>
-      <DrawerContent className="rounded-t-3xl">
-        <DrawerHeader className="px-5 text-left">
-          <DrawerTitle>{titulo}</DrawerTitle>
+      <DrawerContent className="rounded-t-xl">
+        <DrawerHeader className="border-b px-4 pt-2 pb-3 text-left">
+          <DrawerTitle className="text-left">{titulo}</DrawerTitle>
           {descricao ? <DrawerDescription>{descricao}</DrawerDescription> : null}
         </DrawerHeader>
-        <div className="overflow-y-auto px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">{children}</div>
+        <div className="overflow-y-auto px-4 pt-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]">{children}</div>
       </DrawerContent>
     </Drawer>
   );

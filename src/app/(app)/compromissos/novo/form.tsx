@@ -1,8 +1,9 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { Lightbulb } from "lucide-react";
-import { Campo, CampoValor, Interruptor, Selecao, estiloInput } from "@/components/app/campos";
+import { Info } from "lucide-react";
+import { AreaTexto, Campo, CampoValor, GrupoFormulario, Interruptor, RodapeFormulario, Selecao, estiloInput } from "@/components/app/campos";
+import { CampoData } from "@/components/app/campo-data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FREQUENCIAS, TIPOS_COMPROMISSO, type ModeloGasto, type TipoCompromisso } from "@/lib/catalogo";
@@ -26,17 +27,17 @@ export function FormCompromisso({ modelo, categorias }: Props) {
   const erro = (campo: string) => estado.erros?.[campo]?.[0];
 
   return (
-    <form action={acao} className="flex flex-col gap-4">
+    <form action={acao} className="flex flex-col">
       <input type="hidden" name="modelo" value={modelo?.chave ?? ""} />
 
       {modelo?.dica && (
-        <p className="flex gap-3 rounded-2xl bg-accent p-4 text-sm text-accent-foreground">
-          <Lightbulb className="mt-0.5 size-4 shrink-0" />
+        <p className="mb-8 flex gap-3 border-l-2 border-foreground/70 py-0.5 pl-3.5 text-[13px] leading-relaxed text-muted-foreground">
+          <Info className="mt-0.5 size-3.5 shrink-0 text-foreground" />
           {modelo.dica}
         </p>
       )}
 
-      <section className="rounded-3xl border bg-card p-5">
+      <GrupoFormulario titulo="Valor" descricao={anual ? "O total do ano, como vem no carnê." : undefined}>
         <CampoValor
           id="valor"
           name="valor"
@@ -45,21 +46,19 @@ export function FormCompromisso({ modelo, categorias }: Props) {
           erro={erro("valor")}
           autoFocus
         />
-        <div className="mt-4 border-t pt-4">
-          <Interruptor
-            name="valorVariavel"
-            defaultChecked={v ? v.valorVariavel === "on" : Boolean(modelo?.variavel)}
-            titulo={anual ? "Ainda não sei o valor exato" : "O valor muda todo mês"}
-            descricao={
-              anual
-                ? "Use o valor do ano passado. Você confirma quando o carnê chegar."
-                : "Use a média. Você confirma o valor real quando a conta chegar."
-            }
-          />
-        </div>
-      </section>
+        <Interruptor
+          name="valorVariavel"
+          defaultChecked={v ? v.valorVariavel === "on" : Boolean(modelo?.variavel)}
+          titulo={anual ? "Ainda não sei o valor exato" : "O valor muda todo mês"}
+          descricao={
+            anual
+              ? "Use o valor do ano passado. Você confirma quando o carnê chegar."
+              : "Use a média. Você confirma o valor real quando a conta chegar."
+          }
+        />
+      </GrupoFormulario>
 
-      <section className="flex flex-col gap-4 rounded-3xl border bg-card p-5">
+      <GrupoFormulario titulo="Detalhes">
         <Campo rotulo="Descrição" htmlFor="descricao" erro={erro("descricao")}>
           <Input
             id="descricao"
@@ -72,7 +71,6 @@ export function FormCompromisso({ modelo, categorias }: Props) {
             className={estiloInput}
           />
         </Campo>
-
         <div className="grid gap-4 sm:grid-cols-2">
           <Campo rotulo="Categoria" htmlFor="categoriaId" erro={erro("categoriaId")}>
             <Selecao id="categoriaId" name="categoriaId" defaultValue={v?.categoriaId ?? categoriaPadrao}>
@@ -84,7 +82,6 @@ export function FormCompromisso({ modelo, categorias }: Props) {
               ))}
             </Selecao>
           </Campo>
-
           <Campo rotulo="Tipo" htmlFor="tipo" erro={erro("tipo")}>
             <Selecao id="tipo" name="tipo" value={tipo} onChange={(e) => setTipo(e.target.value as TipoCompromisso)}>
               {Object.entries(TIPOS_COMPROMISSO).map(([chave, t]) => (
@@ -94,7 +91,11 @@ export function FormCompromisso({ modelo, categorias }: Props) {
               ))}
             </Selecao>
           </Campo>
+        </div>
+      </GrupoFormulario>
 
+      <GrupoFormulario titulo="Cobrança" descricao={temPrazo ? "Já pagou algumas? Informe em qual parcela está." : undefined}>
+        <div className="grid gap-4 sm:grid-cols-2">
           {anual ? (
             <Campo rotulo="Como vai pagar este ano" htmlFor="parcelasPorAno" erro={erro("parcelasPorAno")}>
               <input type="hidden" name="frequencia" value="anual" />
@@ -124,14 +125,11 @@ export function FormCompromisso({ modelo, categorias }: Props) {
             htmlFor="dataVencimentoInicial"
             erro={erro("dataVencimentoInicial")}
           >
-            <Input
+            <CampoData
               id="dataVencimentoInicial"
               name="dataVencimentoInicial"
-              type="date"
-              required
               defaultValue={v?.dataVencimentoInicial ?? ""}
-              aria-invalid={Boolean(erro("dataVencimentoInicial"))}
-              className={estiloInput}
+              invalido={Boolean(erro("dataVencimentoInicial"))}
             />
           </Campo>
 
@@ -155,7 +153,7 @@ export function FormCompromisso({ modelo, categorias }: Props) {
                 rotulo="A próxima é a parcela nº"
                 htmlFor="primeiraParcela"
                 erro={erro("primeiraParcela")}
-                ajuda="Já pagou algumas? Ex.: 25 num financiamento de 60."
+                ajuda="Ex.: 25 num financiamento de 60."
               >
                 <Input
                   id="primeiraParcela"
@@ -172,18 +170,20 @@ export function FormCompromisso({ modelo, categorias }: Props) {
             </>
           )}
         </div>
+      </GrupoFormulario>
 
-        <Campo rotulo="Observação (opcional)" htmlFor="observacao" erro={erro("observacao")}>
-          <textarea
-            id="observacao"
-            name="observacao"
-            rows={2}
-            maxLength={500}
-            defaultValue={v?.observacao ?? ""}
-            className="rounded-xl border border-input bg-card px-3.5 py-2.5 text-[15px] outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
-          />
-        </Campo>
-      </section>
+      <GrupoFormulario titulo="Observação" descricao="Opcional. Fica cifrada.">
+        <AreaTexto
+          id="observacao"
+          name="observacao"
+          aria-label="Observação"
+          rows={2}
+          maxLength={500}
+          defaultValue={v?.observacao ?? ""}
+          aria-invalid={Boolean(erro("observacao"))}
+        />
+        {erro("observacao") && <p className="text-xs text-critico">{erro("observacao")}</p>}
+      </GrupoFormulario>
 
       {estado.mensagem && (
         <p aria-live="polite" className="text-sm text-critico">
@@ -191,12 +191,11 @@ export function FormCompromisso({ modelo, categorias }: Props) {
         </p>
       )}
 
-      {/* No celular o botão fica preso acima da barra de abas */}
-      <div className="sticky bottom-20 z-10 -mx-4 bg-gradient-to-t from-background via-background to-transparent px-4 pt-6 pb-2 md:static md:mx-0 md:bg-none md:p-0">
-        <Button size="lg" disabled={pendente} className="h-13 w-full rounded-2xl text-base font-semibold shadow-lg shadow-primary/20">
+      <RodapeFormulario>
+        <Button size="lg" disabled={pendente} className="h-11 w-full rounded-md px-5 text-sm md:h-10 md:w-auto">
           {pendente ? "Salvando…" : "Salvar compromisso"}
         </Button>
-      </div>
+      </RodapeFormulario>
     </form>
   );
 }

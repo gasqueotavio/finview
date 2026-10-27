@@ -11,14 +11,14 @@ export const metadata = { title: "Novo gasto · FinView" };
 
 export default function NovoGastoPage() {
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex max-w-3xl flex-col gap-8">
       <Cabecalho
         voltarPara="/dashboard"
         titulo="Novo gasto"
         subtitulo={
           <>
             Para algo pontual. Se repete ou é parcelado,{" "}
-            <Link href="/compromissos/novo" className="font-medium text-primary hover:underline">
+            <Link href="/compromissos/novo" className="font-medium text-foreground underline underline-offset-4">
               cadastre como recorrente
             </Link>
             .
@@ -28,8 +28,8 @@ export default function NovoGastoPage() {
       <Suspense
         fallback={
           <div className="flex flex-col gap-4" aria-busy aria-label="Carregando">
-            <Skeleton className="h-44 rounded-3xl" />
-            <Skeleton className="h-64 rounded-3xl" />
+            <Skeleton className="h-28 rounded-md" />
+            <Skeleton className="h-56 rounded-md" />
           </div>
         }
       >

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 export function Cabecalho({
   voltarPara,
@@ -11,17 +11,17 @@ export function Cabecalho({
   subtitulo?: React.ReactNode;
 }) {
   return (
-    <div className="flex items-start gap-2">
+    <div className="flex flex-col gap-4">
       <Link
         href={voltarPara}
-        aria-label="Voltar"
-        className="-ml-2 flex size-9 shrink-0 items-center justify-center rounded-full text-muted-foreground transition hover:bg-card hover:text-foreground active:scale-90"
+        className="inline-flex w-fit items-center gap-1.5 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
       >
-        <ChevronLeft className="size-5" />
+        <ArrowLeft className="size-3.5" />
+        Voltar
       </Link>
-      <div className="min-w-0 pt-0.5">
-        <h1 className="text-2xl leading-tight font-semibold tracking-tight">{titulo}</h1>
-        {subtitulo && <p className="mt-1 text-sm text-muted-foreground">{subtitulo}</p>}
+      <div>
+        <h1 className="text-2xl leading-tight font-semibold tracking-[-0.02em]">{titulo}</h1>
+        {subtitulo && <p className="mt-1.5 max-w-prose text-sm text-muted-foreground">{subtitulo}</p>}
       </div>
     </div>
   );

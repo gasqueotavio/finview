@@ -31,3 +31,12 @@ export const quitacaoSchema = z.object({
   valor: valorEmReais,
   data: z.iso.date("Informe a data da quitação"),
 });
+
+export const edicaoAvulsoSchema = z.object({
+  id: z.uuid(),
+  descricao: z.string().trim().min(1, "Informe uma descrição").max(120),
+  categoriaId: z.preprocess(opcional, z.uuid().optional()),
+  valor: valorEmReais,
+  data: z.iso.date("Informe a data"),
+  observacao: z.preprocess(opcional, z.string().trim().max(500).optional()),
+});

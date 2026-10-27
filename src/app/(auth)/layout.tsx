@@ -1,49 +1,55 @@
-import { BellRing, Lock, Repeat } from "lucide-react";
+import Link from "next/link";
 import { Marca } from "@/components/app/marca";
+import { AssinaturaAutor } from "@/components/app/assinatura";
+import { PreviaAnimada } from "./previa-animada";
 
-const DESTAQUES = [
-  { Icone: BellRing, titulo: "Nada passa batido", texto: "Contas, parcelas e impostos anuais lembrados no dia certo." },
-  { Icone: Repeat, titulo: "Recorrentes no automático", texto: "Cadastre uma vez o aluguel, o plano ou o financiamento." },
-  { Icone: Lock, titulo: "Seus dados cifrados", texto: "Descrições criptografadas: nem o banco de dados lê." },
+const PONTOS = [
+  "Contas, parcelas e impostos anuais lembrados no dia certo.",
+  "Cadastre uma vez o aluguel, o plano ou o financiamento.",
+  "Descrições cifradas com chave própria de cada usuário.",
 ];
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <main className="grid min-h-dvh flex-1 lg:grid-cols-[1.1fr_1fr]">
-      {/* Painel da marca (desktop) */}
-      <section className="relative hidden overflow-hidden bg-primary p-12 text-primary-foreground lg:flex lg:flex-col">
-        <div
-          aria-hidden
-          className="absolute -top-40 -right-40 size-[520px] rounded-full bg-white/10 blur-3xl"
-        />
-        <div aria-hidden className="absolute -bottom-48 -left-32 size-[460px] rounded-full bg-black/10 blur-3xl" />
+    <main className="grid min-h-dvh flex-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      {/* Formulário */}
+      <section className="flex flex-col px-5 py-6 md:px-10">
+        <Marca />
+        <div className="mx-auto flex w-full max-w-[360px] flex-1 flex-col justify-center py-12">{children}</div>
+        <div className="flex flex-wrap justify-between gap-x-4 gap-y-1 text-xs text-muted-foreground">
+          <span>
+            Seus dados ficam só com você.{" "}
+            <Link href="/privacidade" className="underline-offset-4 hover:text-foreground hover:underline">
+              Privacidade
+            </Link>{" "}
+            ·{" "}
+            <Link href="/termos" className="underline-offset-4 hover:text-foreground hover:underline">
+              Termos
+            </Link>
+          </span>
+          <AssinaturaAutor />
+        </div>
+      </section>
 
-        <Marca className="relative text-primary-foreground [&>span]:bg-white [&>span]:text-primary" />
-
-        <div className="relative mt-auto max-w-md">
-          <h1 className="text-4xl leading-tight font-semibold tracking-tight">Suas contas em dia, sem esforço.</h1>
-          <ul className="mt-10 flex flex-col gap-6">
-            {DESTAQUES.map(({ Icone, titulo, texto }) => (
-              <li key={titulo} className="flex gap-4">
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white/15">
-                  <Icone className="size-5" />
-                </span>
-                <span>
-                  <span className="block font-semibold">{titulo}</span>
-                  <span className="block text-sm text-primary-foreground/80">{texto}</span>
-                </span>
+      {/* Prévia do produto (desktop) */}
+      <section className="hidden flex-col justify-center gap-10 border-l bg-card px-14 py-12 lg:flex">
+        <div className="max-w-[460px]">
+          <h1 className="text-[40px] leading-[1.05] font-semibold tracking-[-0.035em]">
+            Toda conta do mês,
+            <br />
+            num lugar só.
+          </h1>
+          <ul className="mt-6 flex flex-col gap-2 text-sm text-muted-foreground">
+            {PONTOS.map((p, i) => (
+              <li key={p} className="flex gap-3">
+                <span className="dinheiro text-foreground">0{i + 1}</span>
+                {p}
               </li>
             ))}
           </ul>
         </div>
-      </section>
 
-      {/* Formulário */}
-      <section className="flex items-center justify-center px-5 py-10">
-        <div className="w-full max-w-sm">
-          <Marca className="mb-10 lg:hidden" />
-          {children}
-        </div>
+        <PreviaAnimada />
       </section>
     </main>
   );

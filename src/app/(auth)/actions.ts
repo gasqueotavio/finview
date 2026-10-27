@@ -4,7 +4,7 @@ import { z } from "zod";
 import { redirect } from "next/navigation";
 import { garantirCategoriasPadrao } from "@/lib/dados/categorias";
 import { createClient } from "@/lib/supabase/server";
-import { cadastroSchema, loginSchema } from "@/lib/validations/auth";
+import { cadastroSchema, esqueciSenhaSchema, loginSchema, novaSenhaSchema } from "@/lib/validations/auth";
 
 export type EstadoForm = {
   mensagem?: string;
@@ -77,6 +77,50 @@ export async function entrarComGoogle() {
   });
   if (error || !data.url) redirect("/login?erro=google");
   redirect(data.url);
+}
+
+export async function pedirNovaSenha(_prev: EstadoForm, formData: FormData): Promise<EstadoForm> {
+  const parsed = esqueciSenhaSchema.safeParse({ email: formData.get("email") });
+  if (!parsed.success) return { erros: z.flattenError(parsed.error).fieldErrors };
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/confirm?next=/redefinir-senha`,
+  });
+
+  if (error?.code === "over_email_send_rate_limit") {
+    return { mensagem: "Muitos pedidos seguidos. Aguarde alguns minutos e tente de novo." };
+  }
+
+  // Mesmo retorno exista ou não a conta (evita revelar quais e-mails estão cadastrados).
+  return {
+    sucesso: true,
+    mensagem: "Se existir uma conta com esse e-mail, enviamos um link para criar uma nova senha. Abra-o neste mesmo navegador.",
+  };
+}
+
+export async function definirNovaSenha(_prev: EstadoForm, formData: FormData): Promise<EstadoForm> {
+  const parsed = novaSenhaSchema.safeParse({
+    senha: formData.get("senha"),
+    confirmacao: formData.get("confirmacao"),
+  });
+  if (!parsed.success) return { erros: z.flattenError(parsed.error).fieldErrors };
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.updateUser({ password: parsed.data.senha });
+
+  if (error) {
+    if (error.code === "weak_password") return { mensagem: "Senha fraca ou já exposta em vazamentos. Escolha outra." };
+    if (error.code === "same_password") return { mensagem: "A nova senha precisa ser diferente da atual." };
+    if (error.code === "reauthentication_needed" || error.code === "session_not_found") {
+      return { mensagem: "O link expirou. Peça um novo em “Esqueci minha senha”." };
+    }
+    return { mensagem: "Não foi possível trocar a senha. Tente novamente." };
+  }
+
+  // Encerra as sessões nos outros aparelhos: quem pediu a troca pode ter perdido o controle da senha antiga.
+  await supabase.auth.signOut({ scope: "others" });
+  redirect("/dashboard?senha=alterada");
 }
 
 export async function sair() {

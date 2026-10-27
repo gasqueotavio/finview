@@ -1,4 +1,5 @@
-import { BolhaCategoria } from "@/components/app/icones";
+import { Valor } from "@/components/app/dinheiro";
+import { AmostraCategoria } from "@/components/app/icones";
 import type { Lancamento } from "@/lib/dados/lancamentos";
 import { formatarMoeda } from "@/lib/formato";
 import type { CategoriaResumida } from "./lista-contas";
@@ -7,7 +8,7 @@ import type { CategoriaResumida } from "./lista-contas";
 // Até 5 categorias nomeadas; o resto vira "Outras" (mais cores não ajudariam a ler).
 const MAXIMO_NOMEADAS = 5;
 
-type Fatia = { id: string; nome: string; chave: string | null; cor: string | null; total: number };
+type Fatia = { id: string; nome: string; cor: string | null; total: number };
 
 export function GastosPorCategoria({
   lancamentos,
@@ -26,7 +27,7 @@ export function GastosPorCategoria({
   const fatias: Fatia[] = [...totais.entries()]
     .map(([id, total]) => {
       const c = categorias[id];
-      return { id, nome: c?.nome ?? "Sem categoria", chave: c?.chave ?? null, cor: c?.cor ?? null, total };
+      return { id, nome: c?.nome ?? "Sem categoria", cor: c?.cor ?? null, total };
     })
     .sort((a, b) => b.total - a.total);
 
@@ -35,47 +36,44 @@ export function GastosPorCategoria({
   const nomeadas = fatias.slice(0, MAXIMO_NOMEADAS);
   const resto = fatias.slice(MAXIMO_NOMEADAS);
   if (resto.length > 0) {
-    nomeadas.push({ id: "outras", nome: `Outras (${resto.length})`, chave: null, cor: null, total: resto.reduce((s, f) => s + f.total, 0) });
+    nomeadas.push({ id: "outras", nome: `Outras (${resto.length})`, cor: null, total: resto.reduce((s, f) => s + f.total, 0) });
   }
 
   const totalGeral = fatias.reduce((s, f) => s + f.total, 0);
   const maior = Math.max(...nomeadas.map((f) => f.total));
 
   return (
-    <section className="flex flex-col gap-3">
-      <h2 className="text-base font-semibold">Para onde vai o dinheiro</h2>
-      <div className="rounded-2xl border bg-card p-4 md:p-5">
-        <ul className="flex flex-col gap-4">
-          {nomeadas.map((f) => {
-            const pct = totalGeral > 0 ? (f.total / totalGeral) * 100 : 0;
-            const rotulo = `${f.nome}: ${formatarMoeda(f.total)} (${pct.toFixed(0)}% do mês)`;
-            return (
-              <li key={f.id} title={rotulo} className="group flex items-center gap-3">
-                <BolhaCategoria chave={f.chave} cor={f.cor} tamanho="sm" />
-                <div className="min-w-0 flex-1">
-                  <div className="mb-1.5 flex items-baseline justify-between gap-3 text-sm">
-                    <span className="truncate font-medium">{f.nome}</span>
-                    <span className="shrink-0 tabular-nums">
-                      <span className="font-semibold">{formatarMoeda(f.total)}</span>
-                      <span className="ml-1.5 text-xs text-muted-foreground">{pct.toFixed(0)}%</span>
-                    </span>
-                  </div>
-                  <div className="h-2 rounded-full bg-chart-track" aria-hidden>
-                    <div
-                      className="h-full rounded-full bg-chart-1 transition-[width] duration-500 group-hover:brightness-110"
-                      style={{ width: `${Math.max(2, (f.total / maior) * 100)}%` }}
-                    />
-                  </div>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-        <p className="mt-4 border-t pt-3 text-xs text-muted-foreground">
-          Total do mês: <span className="font-medium text-foreground tabular-nums">{formatarMoeda(totalGeral)}</span> · inclui contas
-          pagas e a pagar
-        </p>
+    <section className="flex flex-col gap-4">
+      <div className="flex items-baseline justify-between gap-4 border-b pb-3">
+        <h2 className="text-[15px] font-semibold">Por categoria</h2>
+        <Valor valor={totalGeral} className="text-[13px] text-muted-foreground" />
       </div>
+      <ul className="flex flex-col gap-3.5">
+        {nomeadas.map((f) => {
+          const pct = totalGeral > 0 ? (f.total / totalGeral) * 100 : 0;
+          return (
+            <li key={f.id} title={`${f.nome}: ${formatarMoeda(f.total)} (${pct.toFixed(0)}% do mês)`} className="group">
+              <div className="flex items-baseline justify-between gap-3 text-[13px]">
+                <span className="flex min-w-0 items-center gap-2">
+                  <AmostraCategoria cor={f.cor} />
+                  <span className="truncate">{f.nome}</span>
+                </span>
+                <span className="flex shrink-0 items-baseline gap-2">
+                  <Valor valor={f.total} className="font-medium" />
+                  <span className="dinheiro w-8 text-right text-[11px] text-muted-foreground">{pct.toFixed(0)}%</span>
+                </span>
+              </div>
+              <div className="mt-1.5 h-1 rounded-[1px] bg-chart-track" aria-hidden>
+                <div
+                  className="h-full rounded-[1px] bg-chart-1 transition-[width] duration-500"
+                  style={{ width: `${Math.max(1.5, (f.total / maior) * 100)}%` }}
+                />
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+      <p className="text-xs text-muted-foreground">Inclui contas pagas e a pagar do mês.</p>
     </section>
   );
 }

@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Suspense, useState } from "react";
-import { ArrowRight, CalendarClock, House, Plus, Receipt, Repeat, type LucideIcon } from "lucide-react";
+import { Suspense, useEffect, useState } from "react";
+import { ArrowRight, CalendarClock, House, Plus, Receipt, Repeat, UserRound, type LucideIcon } from "lucide-react";
 import { Painel } from "@/components/app/painel";
 import { cn } from "@/lib/utils";
 
 const ITENS: { href: string; rotulo: string; Icone: LucideIcon }[] = [
   { href: "/dashboard", rotulo: "Início", Icone: House },
   { href: "/compromissos", rotulo: "Compromissos", Icone: CalendarClock },
+  { href: "/conta", rotulo: "Minha conta", Icone: UserRound },
 ];
 
 function ativo(pathname: string, href: string) {
@@ -19,17 +20,32 @@ function ativo(pathname: string, href: string) {
 export function NavegacaoLateral() {
   const [adicionando, setAdicionando] = useState(false);
 
+  // Atalho "N" abre o "Adicionar" (fora de campos de texto, sem modificadores).
+  useEffect(() => {
+    function aoTeclar(e: KeyboardEvent) {
+      const alvo = e.target as HTMLElement;
+      if (e.key.toLowerCase() !== "n" || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (alvo.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(alvo.tagName)) return;
+      e.preventDefault();
+      setAdicionando(true);
+    }
+    window.addEventListener("keydown", aoTeclar);
+    return () => window.removeEventListener("keydown", aoTeclar);
+  }, []);
+
   return (
     <>
       <button
         type="button"
         onClick={() => setAdicionando(true)}
-        className="mb-6 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/25 transition hover:brightness-110 active:scale-[0.98]"
+        aria-keyshortcuts="n"
+        className="mb-5 flex h-9 w-full items-center gap-2 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
       >
-        <Plus className="size-4" strokeWidth={2.6} />
+        <Plus className="size-4" />
         Adicionar
+        <kbd aria-hidden className="ml-auto font-mono text-[11px] opacity-60">N</kbd>
       </button>
-      <nav className="flex flex-col gap-1">
+      <nav className="flex flex-col gap-0.5">
         {ITENS.map((item) => (
           <Suspense key={item.href} fallback={<ItemLateral item={item} ativo={false} />}>
             <ComPathname>{(pathname) => <ItemLateral item={item} ativo={ativo(pathname, item.href)} />}</ComPathname>
@@ -47,21 +63,21 @@ export function NavegacaoInferior() {
 
   return (
     <>
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t bg-card/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden">
-        <div className="mx-auto grid h-16 max-w-md grid-cols-3 items-center">
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
+        <div className="mx-auto grid h-16 max-w-md grid-cols-3">
           <Suspense fallback={<ItemInferior item={inicio} ativo={false} />}>
             <ComPathname>{(pathname) => <ItemInferior item={inicio} ativo={ativo(pathname, inicio.href)} />}</ComPathname>
           </Suspense>
-          <div className="flex justify-center">
-            <button
-              type="button"
-              aria-label="Adicionar"
-              onClick={() => setAdicionando(true)}
-              className="flex size-13 -translate-y-3 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 ring-4 ring-background transition active:scale-95"
-            >
-              <Plus className="size-6" strokeWidth={2.6} />
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => setAdicionando(true)}
+            className="flex flex-col items-center justify-center gap-1 text-[11px] font-medium text-foreground"
+          >
+            <span className="flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
+              <Plus className="size-4" strokeWidth={2.4} />
+            </span>
+            Adicionar
+          </button>
           <Suspense fallback={<ItemInferior item={compromissos} ativo={false} />}>
             <ComPathname>
               {(pathname) => <ItemInferior item={compromissos} ativo={ativo(pathname, compromissos.href)} />}
@@ -84,11 +100,11 @@ function ItemLateral({ item: { href, rotulo, Icone }, ativo }: { item: (typeof I
     <Link
       href={href}
       className={cn(
-        "flex h-10 items-center gap-3 rounded-xl px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
-        ativo && "bg-accent text-accent-foreground hover:bg-accent hover:text-accent-foreground",
+        "flex h-8 items-center gap-2.5 rounded-md px-2.5 text-sm text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground",
+        ativo && "bg-sidebar-accent font-medium text-foreground",
       )}
     >
-      <Icone className="size-[18px]" />
+      <Icone className="size-4" />
       {rotulo}
     </Link>
   );
@@ -99,11 +115,11 @@ function ItemInferior({ item: { href, rotulo, Icone }, ativo }: { item: (typeof 
     <Link
       href={href}
       className={cn(
-        "flex flex-col items-center gap-1 text-[11px] font-medium text-muted-foreground transition-colors",
-        ativo && "text-primary",
+        "flex flex-col items-center justify-center gap-1 text-[11px] font-medium text-muted-foreground transition-colors",
+        ativo && "text-foreground",
       )}
     >
-      <Icone className="size-[22px]" strokeWidth={ativo ? 2.4 : 2} />
+      <Icone className="size-5" strokeWidth={ativo ? 2.2 : 1.8} />
       {rotulo}
     </Link>
   );
@@ -127,22 +143,20 @@ function PainelAdicionar({ aberto, aoMudar }: { aberto: boolean; aoMudar: (v: bo
 
   return (
     <Painel aberto={aberto} aoMudar={aoMudar} titulo="O que você quer adicionar?">
-      <div className="flex flex-col gap-2">
+      <div className="divide-y overflow-hidden rounded-lg border">
         {opcoes.map(({ href, Icone, titulo, descricao }) => (
           <Link
             key={href}
             href={href}
             onClick={() => aoMudar(false)}
-            className="group flex items-center gap-4 rounded-2xl border bg-card p-4 transition hover:border-primary/40 hover:bg-accent/50 active:scale-[0.99]"
+            className="group flex items-center gap-3.5 bg-card px-4 py-3.5 transition-colors hover:bg-muted/60"
           >
-            <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground">
-              <Icone className="size-5" />
-            </span>
+            <Icone className="size-[18px] shrink-0 text-muted-foreground" />
             <span className="min-w-0 flex-1">
-              <span className="block font-medium">{titulo}</span>
-              <span className="block text-sm text-muted-foreground">{descricao}</span>
+              <span className="block text-sm font-medium">{titulo}</span>
+              <span className="block text-[13px] text-muted-foreground">{descricao}</span>
             </span>
-            <ArrowRight className="size-4 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-primary" />
+            <ArrowRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
           </Link>
         ))}
       </div>

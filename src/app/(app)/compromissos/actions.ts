@@ -7,7 +7,7 @@ import { getUsuario } from "@/lib/auth";
 import { TIPOS_COMPROMISSO } from "@/lib/catalogo";
 import { cifrar, cifrarOpcional, decifrar } from "@/lib/crypto";
 import { createClient } from "@/lib/supabase/server";
-import { compromissoSchema, planoAnoSchema } from "@/lib/validations/compromisso";
+import { compromissoSchema, edicaoCompromissoSchema, planoAnoSchema } from "@/lib/validations/compromisso";
 import { quitacaoSchema } from "@/lib/validations/lancamento";
 
 export type EstadoForm = {
@@ -133,4 +133,48 @@ export async function cancelarCompromisso(formData: FormData) {
   const { error } = await supabase.rpc("cancelar_compromisso", { p_compromisso_id: id });
   if (error) throw new Error("Não foi possível cancelar o compromisso.");
   refresh();
+}
+
+export async function editarCompromisso(_prev: EstadoForm, formData: FormData): Promise<EstadoForm> {
+  const usuario = await getUsuario();
+  const valores = Object.fromEntries(
+    [...formData.entries()].filter(([, v]) => typeof v === "string") as [string, string][],
+  );
+  const parsed = edicaoCompromissoSchema.safeParse(valores);
+  if (!parsed.success) return { erros: z.flattenError(parsed.error).fieldErrors, valores };
+  const d = parsed.data;
+
+  const supabase = await createClient();
+  const { data: atual, error: erroBusca } = await supabase
+    .from("compromissos")
+    .select("tipo, status, valor_parcela")
+    .eq("id", d.id)
+    .single();
+  if (erroBusca) return { mensagem: "Compromisso não encontrado.", valores };
+  // O campo de valor só aparece para compromisso ativo e que não é conta anual.
+  if (atual.tipo !== "anual" && atual.status === "ativo" && d.valor === undefined) {
+    return { erros: { valor: ["Informe o valor"] }, valores };
+  }
+
+  const { error } = await supabase.rpc("editar_compromisso", {
+    p_compromisso_id: d.id,
+    p_descricao_enc: cifrar(d.descricao, usuario.id),
+    p_valor_parcela: d.valor ?? Number(atual.valor_parcela),
+    p_valor_variavel: d.valorVariavel,
+    p_categoria_id: d.categoriaId,
+    p_observacao_enc: cifrarOpcional(d.observacao, usuario.id) ?? undefined,
+  });
+  if (error) return { mensagem: "Não foi possível salvar as alterações.", valores };
+
+  redirect("/compromissos");
+}
+
+/** Exclui o compromisso e todas as parcelas, inclusive o histórico pago (para manter o histórico, use Cancelar). */
+export async function excluirCompromisso(formData: FormData) {
+  await getUsuario();
+  const id = z.uuid().parse(formData.get("id"));
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("compromissos").delete().eq("id", id).select("id");
+  if (error || data.length === 0) throw new Error("Não foi possível excluir o compromisso.");
+  redirect("/compromissos");
 }

@@ -55,91 +55,110 @@
 
 :root {
   color-scheme: light;
-  --radius: 0.875rem;
+  --radius: 0.5rem;
 
-  --background: #f5f6f8;
-  --foreground: #0f1115;
+  /* Papel e tinta: neutros quentes, sem azul genérico. A hierarquia vem da tipografia e de linhas finas. */
+  --background: #f7f7f4;
+  --foreground: #1b1b18;
   --card: #ffffff;
-  --card-foreground: #0f1115;
+  --card-foreground: #1b1b18;
   --popover: #ffffff;
-  --popover-foreground: #0f1115;
+  --popover-foreground: #1b1b18;
 
-  /* Azul da marca (rampa validada da skill de dataviz). Botão #256abf: 5,3:1 com texto branco. */
-  --primary: #256abf;
-  --primary-foreground: #ffffff;
-  --secondary: #eceff3;
-  --secondary-foreground: #0f1115;
-  --muted: #eceff3;
-  --muted-foreground: #5d6470;
-  --accent: #e8f1fc;
-  --accent-foreground: #1c5cab;
-  --destructive: #c42f2f;
-  --border: #e3e6eb;
-  --input: #d6dae1;
-  --ring: #3987e5;
+  /* Ação principal em tinta (preto quente): 16:1 com o texto claro. */
+  --primary: #1b1b18;
+  --primary-foreground: #fafaf7;
+  --secondary: #efeee9;
+  --secondary-foreground: #1b1b18;
+  --muted: #efeee9;
+  --muted-foreground: #66655e;
+  --accent: #efeee9;
+  --accent-foreground: #1b1b18;
+  --destructive: #b42318;
+  --border: #e5e4de;
+  --input: #d9d8d1;
+  --ring: #1b1b18;
 
-  --chart-1: #2a78d6;
-  --chart-track: #e8ebf0;
+  /* Magnitude em um tom só: tinta suavizada sobre trilho claro. */
+  --chart-1: #3a3934;
+  --chart-track: #ebeae4;
 
-  --sucesso: #0a7a32;
-  --sucesso-suave: #e6f5eb;
-  --alerta: #8a5a00;
-  --alerta-suave: #fff4dc;
-  --critico: #c42f2f;
-  --critico-suave: #fdecec;
+  --sucesso: #15703c;
+  --sucesso-suave: #e7f3ea;
+  --alerta: #8a5300;
+  --alerta-suave: #fbf1dc;
+  --critico: #b42318;
+  --critico-suave: #fbeceb;
 
-  --sidebar: #ffffff;
-  --sidebar-foreground: #0f1115;
-  --sidebar-primary: #256abf;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #e8f1fc;
-  --sidebar-accent-foreground: #1c5cab;
-  --sidebar-border: #e3e6eb;
-  --sidebar-ring: #3987e5;
+  --sidebar: #f7f7f4;
+  --sidebar-foreground: #1b1b18;
+  --sidebar-primary: #1b1b18;
+  --sidebar-primary-foreground: #fafaf7;
+  --sidebar-accent: #ebeae4;
+  --sidebar-accent-foreground: #1b1b18;
+  --sidebar-border: #e5e4de;
+  --sidebar-ring: #1b1b18;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
-    --background: #0b0c0f;
-    --foreground: #eef0f3;
-    --card: #15171c;
-    --card-foreground: #eef0f3;
-    --popover: #1a1d23;
-    --popover-foreground: #eef0f3;
+    --background: #10100f;
+    --foreground: #ecebe6;
+    --card: #181816;
+    --card-foreground: #ecebe6;
+    --popover: #1c1c1a;
+    --popover-foreground: #ecebe6;
 
-    --primary: #2a78d6;
-    --primary-foreground: #ffffff;
-    --secondary: #1f2229;
-    --secondary-foreground: #eef0f3;
-    --muted: #1f2229;
-    --muted-foreground: #9ba2ae;
-    --accent: #16243a;
-    --accent-foreground: #86b6ef;
-    --destructive: #f07a7a;
-    --border: #252931;
-    --input: #2e333c;
-    --ring: #3987e5;
+    --primary: #ecebe6;
+    --primary-foreground: #10100f;
+    --secondary: #222220;
+    --secondary-foreground: #ecebe6;
+    --muted: #222220;
+    --muted-foreground: #9c9b94;
+    --accent: #222220;
+    --accent-foreground: #ecebe6;
+    --destructive: #f0857a;
+    --border: #2a2a27;
+    --input: #373733;
+    --ring: #ecebe6;
 
-    --chart-1: #3987e5;
-    --chart-track: #252931;
+    --chart-1: #c9c8c1;
+    --chart-track: #2a2a27;
 
-    --sucesso: #4cc46a;
-    --sucesso-suave: #10291a;
-    --alerta: #f5c04a;
-    --alerta-suave: #2b2210;
-    --critico: #f07a7a;
-    --critico-suave: #2e1516;
+    --sucesso: #5cc184;
+    --sucesso-suave: #14261b;
+    --alerta: #e5b04f;
+    --alerta-suave: #2a2112;
+    --critico: #f0857a;
+    --critico-suave: #2c1715;
 
-    --sidebar: #111317;
-    --sidebar-foreground: #eef0f3;
-    --sidebar-primary: #2a78d6;
-    --sidebar-primary-foreground: #ffffff;
-    --sidebar-accent: #16243a;
-    --sidebar-accent-foreground: #86b6ef;
-    --sidebar-border: #252931;
-    --sidebar-ring: #3987e5;
+    --sidebar: #10100f;
+    --sidebar-foreground: #ecebe6;
+    --sidebar-primary: #ecebe6;
+    --sidebar-primary-foreground: #10100f;
+    --sidebar-accent: #222220;
+    --sidebar-accent-foreground: #ecebe6;
+    --sidebar-border: #2a2a27;
+    --sidebar-ring: #ecebe6;
   }
+}
+
+/* Rótulo de seção: versalete pequeno, como cabeçalho de extrato. */
+@utility rotulo {
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+/* Valores em dinheiro: monoespaçada, dígitos alinhados coluna a coluna. */
+@utility dinheiro {
+  font-family: var(--font-plex-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
 }
 
 @layer base {
@@ -157,4 +176,12 @@
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
+}
+
+/* Seta do <select> nativo (fica no CSS: SVG com espaços quebraria a classe do Tailwind). */
+@utility seta-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-size: 11px;
+  background-position: right 0.75rem center;
+  background-repeat: no-repeat;
 }

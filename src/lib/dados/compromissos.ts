@@ -1,7 +1,7 @@
 import "server-only";
 import { getUsuario } from "@/lib/auth";
 import type { Frequencia, TipoCompromisso } from "@/lib/catalogo";
-import { decifrar } from "@/lib/crypto";
+import { decifrar, decifrarOpcional } from "@/lib/crypto";
 import { createClient } from "@/lib/supabase/server";
 import type { LinhaCompromissoResumo } from "@/types/views";
 
@@ -82,4 +82,49 @@ export async function listarCompromissos(): Promise<ResumoCompromisso[]> {
       };
     })
     .sort((a, b) => (a.proximoVencimento ?? "9999").localeCompare(b.proximoVencimento ?? "9999"));
+}
+
+export type CompromissoEditavel = {
+  id: string;
+  tipo: TipoCompromisso;
+  status: "ativo" | "quitado" | "cancelado";
+  categoriaId: string | null;
+  descricao: string;
+  observacao: string | null;
+  valorParcela: number;
+  valorVariavel: boolean;
+  /** Quantas parcelas pagas seriam apagadas junto, se o compromisso for excluído. */
+  parcelasPagas: number;
+};
+
+export async function obterCompromisso(id: string): Promise<CompromissoEditavel | null> {
+  const usuario = await getUsuario();
+  const supabase = await createClient();
+
+  const { data: c, error } = await supabase
+    .from("compromissos")
+    .select("id, tipo, status, categoria_id, descricao_enc, observacao_enc, valor_parcela, valor_variavel")
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw error;
+  if (!c) return null;
+
+  const { count, error: erroContagem } = await supabase
+    .from("lancamentos")
+    .select("id", { count: "exact", head: true })
+    .eq("compromisso_id", id)
+    .eq("status", "pago");
+  if (erroContagem) throw erroContagem;
+
+  return {
+    id: c.id,
+    tipo: c.tipo,
+    status: c.status,
+    categoriaId: c.categoria_id,
+    descricao: decifrar(c.descricao_enc, usuario.id),
+    observacao: decifrarOpcional(c.observacao_enc, usuario.id),
+    valorParcela: Number(c.valor_parcela),
+    valorVariavel: c.valor_variavel,
+    parcelasPagas: count ?? 0,
+  };
 }

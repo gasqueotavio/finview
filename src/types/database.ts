@@ -352,6 +352,18 @@ export type Database = {
         Args: { p_lancamento_id: string }
         Returns: undefined
       }
+      editar_compromisso: {
+        Args: {
+          p_categoria_id?: string
+          p_compromisso_id: string
+          p_descricao_enc: string
+          p_observacao_enc?: string
+          p_valor_parcela: number
+          p_valor_variavel: boolean
+        }
+        Returns: undefined
+      }
+      excluir_minha_conta: { Args: never; Returns: undefined }
       gerar_lancamentos: {
         Args: { p_compromisso_id: string; p_horizonte?: string }
         Returns: number

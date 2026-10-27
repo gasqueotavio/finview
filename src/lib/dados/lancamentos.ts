@@ -1,6 +1,6 @@
 import "server-only";
 import { getUsuario } from "@/lib/auth";
-import { decifrar } from "@/lib/crypto";
+import { decifrar, decifrarOpcional } from "@/lib/crypto";
 import { createClient } from "@/lib/supabase/server";
 import type { LinhaLancamento } from "@/types/views";
 
@@ -12,6 +12,7 @@ export type Lancamento = {
   compromissoId: string | null;
   categoriaId: string | null;
   descricao: string;
+  observacao: string | null;
   valor: number;
   valorEstimado: boolean;
   valorPago: number | null;
@@ -45,7 +46,7 @@ export async function listarLancamentosDoMes(ano: number, mes: number): Promise<
 
   const { data, error } = await supabase
     .from("vw_lancamentos")
-    .select("id, tipo, compromisso_id, categoria_id, descricao_enc, valor, valor_estimado, valor_pago, data_vencimento, data_pagamento, numero_parcela, ano_referencia, situacao")
+    .select("id, tipo, compromisso_id, categoria_id, descricao_enc, observacao_enc, valor, valor_estimado, valor_pago, data_vencimento, data_pagamento, numero_parcela, ano_referencia, situacao")
     .gte("data_vencimento", inicio)
     .lt("data_vencimento", fim)
     .neq("status", "cancelado")
@@ -72,6 +73,7 @@ export async function listarLancamentosDoMes(ano: number, mes: number): Promise<
     compromissoId: l.compromisso_id,
     categoriaId: l.categoria_id,
     descricao: decifrar(l.descricao_enc, usuario.id),
+    observacao: decifrarOpcional(l.observacao_enc, usuario.id),
     valor: Number(l.valor),
     valorEstimado: l.valor_estimado,
     valorPago: l.valor_pago === null ? null : Number(l.valor_pago),
