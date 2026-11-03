@@ -154,6 +154,39 @@ export type Database = {
           },
         ]
       }
+      ia_consentimentos: {
+        Row: {
+          aceito_em: string
+          user_id: string
+        }
+        Insert: {
+          aceito_em?: string
+          user_id?: string
+        }
+        Update: {
+          aceito_em?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ia_uso: {
+        Row: {
+          dia: string
+          leituras: number
+          user_id: string
+        }
+        Insert: {
+          dia: string
+          leituras?: number
+          user_id: string
+        }
+        Update: {
+          dia?: string
+          leituras?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       lancamentos: {
         Row: {
           ano_referencia: number | null
@@ -478,8 +511,13 @@ export type Database = {
         Args: { p_compromisso_id: string; p_data?: string }
         Returns: undefined
       }
+      consumir_leitura_ia: { Args: never; Returns: number }
       desfazer_pagamento: {
         Args: { p_lancamento_id: string }
+        Returns: undefined
+      }
+      devolver_leitura_ia: {
+        Args: { p_user_id: string }
         Returns: undefined
       }
       editar_compromisso: {
