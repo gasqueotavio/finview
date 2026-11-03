@@ -516,10 +516,7 @@ export type Database = {
         Args: { p_lancamento_id: string }
         Returns: undefined
       }
-      devolver_leitura_ia: {
-        Args: { p_user_id: string }
-        Returns: undefined
-      }
+      devolver_leitura_ia: { Args: { p_user_id: string }; Returns: undefined }
       editar_compromisso: {
         Args: {
           p_categoria_id?: string
