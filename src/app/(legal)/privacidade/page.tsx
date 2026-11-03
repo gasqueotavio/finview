@@ -7,7 +7,7 @@ const CONTATO = "otavioscamattig@gmail.com";
 
 export default function PrivacidadePage() {
   return (
-    <Documento titulo="Política de Privacidade" vigencia="27 de outubro de 2026">
+    <Documento titulo="Política de Privacidade" vigencia="3 de novembro de 2026">
       <p>
         Esta política explica quais dados pessoais o FinView trata, para quê, com quem compartilha e como você exerce seus
         direitos. Ela foi elaborada em conformidade com a <strong>Lei Geral de Proteção de Dados Pessoais</strong> (LGPD, Lei nº
@@ -121,6 +121,10 @@ export default function PrivacidadePage() {
           <strong>Provedor de envio de e-mails</strong>: para os e-mails de confirmação e recuperação de senha.
         </li>
         <li>
+          <strong>Google Gemini</strong>: lê o boleto ou a conta que você enviar pelo botão &quot;Ler boleto com IA&quot;, se você
+          usar esse recurso (ver seção 6).
+        </li>
+        <li>
           <strong>Serviço de notificações do seu navegador</strong> (Google, Apple, Mozilla ou Microsoft, conforme o aparelho):
           entrega os lembretes, se você os ativar. Com &quot;Mostrar nome e valor&quot; ligado, o texto do lembrete inclui o nome
           e o valor da conta; desligado, só a quantidade de contas.
@@ -137,21 +141,55 @@ export default function PrivacidadePage() {
         lei ou ordem de autoridade competente.
       </p>
 
-      <h2>6. Cookies</h2>
+      <h2>6. Leitura de documentos com IA</h2>
+      <p>
+        Ao cadastrar um gasto, você pode usar o botão <strong>Ler boleto com IA</strong> para preencher o formulário a partir da
+        foto ou do PDF de um boleto ou conta. O recurso é <strong>opcional</strong>: tudo pode ser preenchido à mão.
+      </p>
+      <ul>
+        <li>
+          <strong>Provedor:</strong> o arquivo é enviado ao <strong>Google Gemini</strong>, serviço de IA do Google, pela API do
+          Google AI Studio, com servidores fora do Brasil (transferência internacional com base no art. 33, IX, da LGPD).
+        </li>
+        <li>
+          <strong>O que é enviado:</strong> só o arquivo que você escolher, com tudo o que estiver nele (por exemplo, nome do
+          pagador, endereço, valor e código de barras). Não enviamos seu e-mail, seus outros dados nem seu histórico.
+        </li>
+        <li>
+          <strong>O que fica no FinView:</strong> o arquivo não é guardado. Ele passa pela memória do servidor só durante a
+          leitura e não vai para banco de dados, disco ou registros (logs). Ficam apenas os dados que você confirmar ao salvar o
+          gasto, com a descrição e a observação cifradas, e um contador de quantas leituras você fez em cada dia (limite de 10).
+        </li>
+        <li>
+          <strong>Uso pelo Google:</strong> o FinView usa o plano gratuito do Gemini. Nesse plano, o Google pode usar o conteúdo
+          enviado para melhorar os produtos dele, conforme os termos do plano. Por isso, na primeira vez, pedimos o seu aceite
+          (base legal: consentimento, art. 7º, I), que fica registrado. Se o documento tiver algo que você não quer compartilhar,
+          não use o recurso.
+        </li>
+        <li>
+          <strong>Conferência:</strong> a IA pode errar. Os campos lidos aparecem destacados e nada é salvo sem a sua
+          confirmação.
+        </li>
+      </ul>
+      <p>
+        Para retirar o aceite, escreva para <a href={`mailto:${CONTATO}`}>{CONTATO}</a>; ele também é apagado ao excluir a conta.
+      </p>
+
+      <h2>7. Cookies</h2>
       <p>
         Usamos apenas cookies essenciais, que mantêm você conectado à sua conta com segurança, e um service worker (um
         pequeno script do próprio FinView no navegador) que serve só para receber as notificações, se você ativá-las. Não usamos cookies de publicidade,
         de rastreamento ou de análise de terceiros.
       </p>
 
-      <h2>7. Por quanto tempo guardamos</h2>
+      <h2>8. Por quanto tempo guardamos</h2>
       <p>
         Seus dados ficam guardados enquanto sua conta existir. Quando você exclui a conta, seus dados são apagados do banco de
         dados na hora. Registros técnicos mantidos pelos provedores (como logs de acesso) seguem os prazos de cada um e são
         eliminados ao fim deles.
       </p>
 
-      <h2>8. Seus direitos</h2>
+      <h2>9. Seus direitos</h2>
       <p>Pelo art. 18 da LGPD, você pode, a qualquer momento:</p>
       <ul>
         <li>confirmar se tratamos seus dados e acessá-los;</li>
@@ -168,10 +206,10 @@ export default function PrivacidadePage() {
         (gov.br/anpd).
       </p>
 
-      <h2>9. Crianças e adolescentes</h2>
+      <h2>10. Crianças e adolescentes</h2>
       <p>O FinView é destinado a maiores de 18 anos e não coleta intencionalmente dados de crianças e adolescentes.</p>
 
-      <h2>10. Mudanças nesta política</h2>
+      <h2>11. Mudanças nesta política</h2>
       <p>
         Se esta política mudar de forma relevante, avisaremos no próprio app antes de a mudança valer. A data de vigência no topo
         sempre indica a versão atual.

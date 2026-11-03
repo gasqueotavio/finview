@@ -9,6 +9,8 @@ Desenvolvido por Otávio Gasque.
 - **Início:** quanto falta pagar no mês, vencimentos agrupados por dia, pagamento em um toque (com "Desfazer") e gastos por categoria.
 - **Compromissos:** contas fixas, assinaturas, parcelamentos, financiamentos e consórcios, geradas automaticamente mês a mês. Dá para editar, quitar antecipadamente, cancelar (mantendo o histórico) ou excluir.
 - **Contas anuais:** IPVA e IPTU com planejamento por ano (cota única ou parcelado) e uma comparação de qual opção compensa.
+- **Ler boleto com IA:** envie a foto ou o PDF de um boleto ou conta e o formulário de novo gasto é preenchido (quem cobra, valor, vencimento, categoria e linha digitável) para você conferir e salvar. Opcional, com aviso de privacidade na primeira vez e limite de 10 leituras por dia.
+- **Saldo devedor:** financiamentos e empréstimos com o saldo do banco e juros pela Tabela Price; cada parcela paga abate só a amortização.
 - **Valor variável:** contas como luz e água nascem como estimativa e são confirmadas quando o valor real chega.
 - **Catálogo:** checklist de ~90 contas comuns no Brasil, para nenhuma ficar de fora.
 - **Lembretes:** notificações push (computador, Android e iPhone com o app instalado) 3 dias antes, na véspera, no dia e para contas atrasadas.
@@ -21,6 +23,8 @@ Desenvolvido por Otávio Gasque.
 - [Supabase](https://supabase.com): Postgres, autenticação e `pg_cron`
 - Tailwind CSS 4, componentes [shadcn/ui](https://ui.shadcn.com) e IBM Plex Sans/Mono
 - Zod para validação, `web-push` para notificações
+- [Gemini (Google AI Studio)](https://aistudio.google.com), plano gratuito, pelo SDK `@google/genai`: leitura de boletos com saída estruturada em JSON
+- [Vitest](https://vitest.dev) para testes, com [PGlite](https://pglite.dev) para testar as migrations num Postgres em memória
 - Hospedagem na [Vercel](https://vercel.com) (funções em `pdx1`, perto do banco em `us-west-2`)
 
 ## Segurança e privacidade
@@ -34,7 +38,7 @@ Desenvolvido por Otávio Gasque.
 
 ## Rodando localmente
 
-Pré-requisitos: Node.js 20+ e um projeto no Supabase.
+Pré-requisitos: Node.js 22+ e um projeto no Supabase.
 
 1. Instale as dependências:
 
@@ -51,7 +55,9 @@ Pré-requisitos: Node.js 20+ e um projeto no Supabase.
    | `FINVIEW_ENCRYPTION_KEY` | Chave mestra da criptografia (32 bytes em base64) |
    | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` | Notificações push (`npx web-push generate-vapid-keys`) |
    | `CRON_SECRET` | Protege a rota do envio diário de lembretes |
-   | `SUPABASE_SECRET_KEY` | Chave secreta do Supabase, usada só pelo envio diário (nunca com `NEXT_PUBLIC_`) |
+   | `SUPABASE_SECRET_KEY` | Chave secreta do Supabase, usada só no servidor: envio diário e devolução de leituras com IA que falharam (nunca com `NEXT_PUBLIC_`) |
+   | `GEMINI_API_KEY` | Chave do Google AI Studio para ler boletos com IA ([criar](https://aistudio.google.com/apikey)). Só no servidor; sem ela o botão não aparece |
+   | `GEMINI_MODEL` | Modelo "flash" gratuito usado na leitura (padrão: `gemini-3.6-flash`) |
 
 3. Aplique as migrations no banco e gere os tipos:
 
@@ -82,6 +88,7 @@ Invoke-RestMethod http://localhost:3000/api/cron/notificacoes -Headers @{ Author
 | `npm run build` | Build de produção |
 | `npm run start` | Sobe o build de produção |
 | `npm run lint` | ESLint |
+| `npm run test` | Testes (Vitest); o Gemini é sempre simulado, nenhum teste chama a API |
 | `npm run db:types` | Regenera `src/types/database.ts` a partir do banco |
 
 ## Estrutura
@@ -100,12 +107,14 @@ src/
     ui/             componentes base do shadcn/ui
   lib/
     dados/          leitura do banco já decifrada (camada de acesso a dados)
+    ia/             leitura de boletos com o Gemini (só no servidor)
     supabase/       clientes do Supabase (sessão, público e administrativo)
     validations/    esquemas Zod dos formulários
     crypto.ts       criptografia por usuário
   proxy.ts          renovação de sessão e proteção das rotas
 supabase/
   migrations/       esquema do banco, funções, RLS e cron
+tests/              testes do Vitest (regras do banco rodam no PGlite)
 public/
   sw.js             service worker das notificações
   icones/           ícones do app instalável

@@ -24,12 +24,21 @@ export async function exportarMeusDados() {
   const usuario = await getUsuario();
   const supabase = await createClient();
 
-  const [{ data: preferencias, error: erroPreferencias }, { data: aparelhos, error: erroAparelhos }] = await Promise.all([
+  const [
+    { data: preferencias, error: erroPreferencias },
+    { data: aparelhos, error: erroAparelhos },
+    { data: aceiteIA, error: erroAceite },
+    { data: usoIA, error: erroUso },
+  ] = await Promise.all([
     supabase.from("notificacao_preferencias").select("no_dia, um_dia_antes, tres_dias_antes, atrasadas, mostrar_detalhes").maybeSingle(),
     supabase.from("push_inscricoes").select("dispositivo, criado_em").order("criado_em"),
+    supabase.from("ia_consentimentos").select("aceito_em").maybeSingle(),
+    supabase.from("ia_uso").select("dia, leituras").order("dia"),
   ]);
   if (erroPreferencias) throw erroPreferencias;
   if (erroAparelhos) throw erroAparelhos;
+  if (erroAceite) throw erroAceite;
+  if (erroUso) throw erroUso;
 
   const [categorias, compromissos, lancamentos] = await Promise.all([
     todas((de, ate) =>
@@ -64,6 +73,10 @@ export async function exportarMeusDados() {
     notificacoes: {
       preferencias,
       aparelhos: aparelhos.map((a) => ({ aparelho: a.dispositivo, ativado_em: a.criado_em })),
+    },
+    leitura_com_ia: {
+      aceite_em: aceiteIA?.aceito_em ?? null,
+      leituras_por_dia: usoIA,
     },
     categorias: categorias.map((c) => ({
       id: c.id,
