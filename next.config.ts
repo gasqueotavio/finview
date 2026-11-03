@@ -14,6 +14,13 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
+  experimental: {
+    serverActions: {
+      // Leitura de boleto com IA: arquivo de até 5 MB + a folga do multipart.
+      // (Na Vercel, o limite por requisição é 4,5 MB; fotos grandes são reduzidas no navegador.)
+      bodySizeLimit: "6mb",
+    },
+  },
   turbopack: {
     rules: {
       "*.css": {

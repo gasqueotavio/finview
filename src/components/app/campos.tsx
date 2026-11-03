@@ -7,6 +7,7 @@ export function Campo({
   htmlFor,
   erro,
   ajuda,
+  destaque,
   className,
   children,
 }: {
@@ -14,6 +15,8 @@ export function Campo({
   htmlFor?: string;
   erro?: string;
   ajuda?: React.ReactNode;
+  /** Valor sugerido pela IA: contorno e selo para a pessoa conferir antes de salvar. */
+  destaque?: boolean;
   className?: string;
   children: React.ReactNode;
 }) {
@@ -21,8 +24,9 @@ export function Campo({
     <div className={cn("flex flex-col gap-1.5", className)}>
       <Label htmlFor={htmlFor} className="text-[13px] font-medium">
         {rotulo}
+        {destaque && <SeloIA />}
       </Label>
-      {children}
+      {destaque ? <div className="rounded-md ring-2 ring-alerta/50 ring-offset-2 ring-offset-background">{children}</div> : children}
       {erro ? (
         <p className="text-xs text-critico">{erro}</p>
       ) : ajuda ? (
@@ -64,6 +68,7 @@ export function CampoValor({
   defaultValue,
   erro,
   autoFocus,
+  destaque,
 }: {
   id: string;
   name: string;
@@ -71,15 +76,19 @@ export function CampoValor({
   defaultValue?: string;
   erro?: string;
   autoFocus?: boolean;
+  /** Valor sugerido pela IA (ver Campo). */
+  destaque?: boolean;
 }) {
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="text-[13px] font-medium">
+      <label htmlFor={id} className="flex items-center text-[13px] font-medium">
         {rotulo}
+        {destaque && <SeloIA />}
       </label>
       <div
         className={cn(
           "flex items-baseline gap-2 border-b border-input pb-2 transition-colors focus-within:border-foreground",
+          destaque && "border-b-2 border-alerta/70",
           erro && "border-critico focus-within:border-critico",
         )}
       >
@@ -166,5 +175,14 @@ export function RodapeFormulario({ children }: { children: React.ReactNode }) {
     <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] z-10 -mx-4 border-t bg-background/95 px-4 py-3 backdrop-blur md:static md:mx-0 md:flex md:justify-end md:bg-transparent md:px-0 md:pt-6 md:pb-0 md:backdrop-blur-none">
       {children}
     </div>
+  );
+}
+
+/** Selo ao lado do rótulo de um campo preenchido pela leitura com IA. */
+export function SeloIA() {
+  return (
+    <span className="ml-1.5 inline-flex items-center rounded-[4px] border border-alerta/40 px-1 py-px text-[10px] leading-none font-semibold tracking-[0.04em] text-alerta uppercase">
+      <span className="sr-only">Preenchido pela </span>IA
+    </span>
   );
 }

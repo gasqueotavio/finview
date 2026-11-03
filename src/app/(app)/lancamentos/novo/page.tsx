@@ -4,8 +4,10 @@ import { Suspense } from "react";
 import { Cabecalho } from "@/components/app/cabecalho";
 import { Skeleton } from "@/components/ui/skeleton";
 import { listarCategorias } from "@/lib/dados/categorias";
+import { consentiuLeituraIA } from "@/lib/dados/ia";
 import { hojeEmBrasilia } from "@/lib/formato";
-import { FormAvulso } from "./form";
+import { iaConfigurada } from "@/lib/ia/gemini";
+import { NovoGasto } from "./novo-gasto";
 
 export const metadata = { title: "Novo gasto · FinView" };
 
@@ -41,6 +43,8 @@ export default function NovoGastoPage() {
 
 async function Conteudo() {
   await connection();
-  const categorias = await listarCategorias();
-  return <FormAvulso categorias={categorias} hoje={hojeEmBrasilia()} />;
+  // Sem GEMINI_API_KEY o botão de leitura com IA nem aparece.
+  const iaDisponivel = iaConfigurada();
+  const [categorias, consentiuIA] = await Promise.all([listarCategorias(), iaDisponivel ? consentiuLeituraIA() : false]);
+  return <NovoGasto categorias={categorias} hoje={hojeEmBrasilia()} iaDisponivel={iaDisponivel} consentiuIA={consentiuIA} />;
 }
