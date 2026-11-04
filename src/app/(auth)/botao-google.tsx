@@ -30,7 +30,7 @@ function Botao() {
   );
 }
 
-/** Aviso de aceite dos termos, logo abaixo das formas de entrar. */
+// Aviso de aceite dos termos, logo abaixo das formas de entrar. */
 export function AvisoTermos() {
   return (
     <p className="mt-6 text-center text-xs leading-relaxed text-muted-foreground">
